@@ -93,7 +93,7 @@ When two states could apply, the first one in this list wins.
 
 ## Examples
 
-Each row is one case and one test. Viewer, Received, Extended on, Proof asked on, Answered on, Dialog and Today are the facts. Due, State and Actions are what the screen must show. A dash means none.
+Each row is one eval and one test. Viewer, Received, Extended on, Proof asked on, Answered on, Dialog and Today are the facts. Due, State and Actions are what the screen must show. A dash means none.
 
 | Example | Viewer | Received | Extended on | Proof asked on | Answered on | Dialog | Today | Due | State | Actions |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -112,4 +112,4 @@ Each row is one case and one test. Viewer, Received, Extended on, Proof asked on
 | E-13 | R-01 | 2026-11-03 | - | - | - | - | 2026-12-03 | 2026-12-03 | ST-02 | Mark as answered, Extend, Ask for proof of identity |
 | E-14 | R-02 | 2026-11-03 | - | - | 2026-11-28 | - | 2026-12-10 | 2026-12-03 | ST-06 | - |
 
-E-09 is the month-end case (Q-02). E-12 shows the due date does not move while the lead waits for proof (BR-05): the request is overdue. E-13 is the due date itself: still due, not yet overdue. E-14 shows a support agent sees an answered request as answered.
+E-09 is the month-end eval (Q-02). E-12 shows the due date does not move while the lead waits for proof (BR-05): the request is overdue. E-13 is the due date itself: still due, not yet overdue. E-14 shows a support agent sees an answered request as answered.

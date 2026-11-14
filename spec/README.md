@@ -27,7 +27,7 @@ Everything in this folder is an example for a made-up product: an inbox where a 
 | Folder | What it holds | IDs |
 |---|---|---|
 | `flows/` | One file per task a role comes to do: what starts it, each step, who acts, and the screen and state each step lands on | F-01 |
-| `screens/` | One file per screen: its states, and cases that say exactly which state and which actions each situation gets | ST-01, E-01 |
+| `screens/` | One file per screen: its states, and evals that say exactly which state and which actions each situation gets | ST-01, E-01 |
 
 An ID never changes when the wording does. Everything that uses a rule, a goal or a state cites its ID: the code, the checks, the handoff and the reviews. A search for an ID finds everything to look at again when it changes.
 
@@ -88,9 +88,9 @@ The spec check reads the flow both ways: every step must land on a state that ex
 
 ## How a screen is written
 
-A screen file has three parts: a few lines about the whole screen, one section per state, and a table of cases.
+A screen file has three parts: a few lines about the whole screen, one section per state, and a table of evals.
 
-A state is one situation the screen can be in, such as "overdue" or "answered". For each state, the file says when it applies, what the screen shows and which buttons it offers. The table of cases then gives exact situations, with dates, and the state each one must get. The checks build the screen for each case, so every case is also a test.
+A state is one situation the screen can be in, such as "overdue" or "answered". For each state, the file says when it applies, what the screen shows and which buttons it offers. The table of evals then gives exact situations, with dates, and the state each one must get. The checks build the screen for each eval, so every eval is also a test.
 
 An example, from `screens/request.md`:
 
@@ -117,14 +117,14 @@ An example, from `screens/request.md`:
 - **Says** lists words that must appear.
 - **Rules** and **Goals** say why the state exists.
 
-The examples table is the exact truth. Each row is one case, with the facts that decide the state, and the state and actions the screen must show. The checks build the screen from each row, so every row is also a test.
+The examples table is the exact truth. Each row is one eval, with the facts that decide the state, and the state and actions the screen must show. The checks build the screen from each row, so every row is also a test.
 
 ## Where the checks come in
 
 | Gate | When | What it checks | Run |
 |---|---|---|---|
-| Spec check | Every change to the spec | IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and every state is reached, every state covered by a case, every component named exists in the design system | `npm run spec` |
-| Spec review | Before the screen is built | A synthetic user reads a feature's flow, screens and cases as each role, against the official rules and the persona sheets, and respects the decisions | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
+| Spec check | Every change to the spec | IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and every state is reached, every state covered by an eval, every component named exists in the design system | `npm run spec` |
+| Spec review | Before the screen is built | A synthetic user reads a feature's flow, screens and evals as each role, against the official rules and the persona sheets, and respects the decisions | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
 | Behaviour check | Every pull request that touches the screen | The built screen against every state and every example | `npm run behaviour` |
 | Design system check | Every pull request that touches the screen | How each state looks, with the design system's own harness | `npm run look` |
 | Handoff | Every change to the spec | Writes the handoff from the spec, for whoever builds the backend | `npm run handoff` |
