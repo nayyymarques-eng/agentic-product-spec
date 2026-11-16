@@ -13,7 +13,7 @@ Work starts from a trigger: a feature someone asks for, a rule that changes, or 
 5. Run `npm run check`. Fix every failure in the same pull request. A failure names the check, the example and where to look.
 
 ## To change a behaviour
-Change the spec first, in the same pull request as the code: the rule, the flow step if the task changes, the state, and at least one example row that shows the change. Then run `npm run handoff`, so whoever builds the backend reads the new version. A decision gets a row in `spec/decisions.md`, with why, who decided, what it applies to and the date. There is one log for the product, even for a decision made inside one flow.
+Change the spec first: the rule, the flow step if the task changes, the state, and at least one example row that shows the change. The spec can merge before the screen is built: mark each new state `- Built: not yet` (or the whole screen, under its title), and remove the mark in the pull request that builds it. Then run `npm run handoff`, so whoever builds the backend reads the new version. A decision gets a row in `spec/decisions.md`, with why, who decided, what it applies to and the date. There is one log for the product, even for a decision made inside one flow.
 
 ## To review a spec
 Read only `spec/`. Check each state against the rules and the goals it cites, each rule against its sources, and each feature against the persona sheets of the roles in its flow. Say which example is missing, which rule no state applies, and which word means two things.

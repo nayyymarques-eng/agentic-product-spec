@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { list, readSpec, root } from './spec.mjs';
+import { list, readSpec, root, notBuiltYet } from './spec.mjs';
 import { renderExamples, out } from './render.mjs';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
@@ -51,7 +51,9 @@ export async function checkBehaviour() {
   rmSync(out, { recursive: true, force: true });
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const waiting = notBuiltYet(spec);
   for (const screen of spec.screens) {
+    if (screen.notBuilt) continue;
     const where = `${screen.file}, screens/${screen.name}.tsx`;
     const fail = (id, ex, what) => fails.push(`${id} ${ex} (${what})  ← ${where}`);
     const pages = await renderExamples(screen, join(out, 'pages'), `../../${ds}`);
@@ -103,10 +105,11 @@ export async function checkBehaviour() {
     }
   }
   await browser.close();
-  return { fails, checked };
+  return { fails, checked, waiting };
 }
 
-const { fails, checked } = await checkBehaviour();
+const { fails, checked, waiting } = await checkBehaviour();
 console.log(`Behaviour: ${checked} examples checked.`);
+if (waiting.length) console.log(`Not built yet, so not checked: ${waiting.join('; ')}. Remove the mark in the pull request that builds it.`);
 if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}`); process.exit(1); }
 console.log('PASS: BEH-01 to BEH-08');

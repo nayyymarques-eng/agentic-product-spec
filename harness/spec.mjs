@@ -81,6 +81,9 @@ function bullets(block) {
   return out;
 }
 
+/** "- Built: not yet" marks a screen or a state the spec has merged and nobody has built yet. */
+const notYet = s => /^not yet$/i.test((s ?? '').trim());
+
 function screen(file) {
   const text = readFileSync(join(specDir, 'screens', file), 'utf8');
   const name = file.replace(/\.md$/, '');
@@ -94,6 +97,7 @@ function screen(file) {
       id, name: heading.slice(id.length).trim(), when: b.When ?? '',
       status: part(b.Status), banner: part(b.Banner), dialog: b.Dialog ? quoted(b.Dialog)[0] : null,
       actions: actions(b.Actions), says: quoted(b.Says), rules: list(b.Rules), goals: list(b.Goals),
+      notBuilt: notYet(b.Built),
     };
   });
   const examplesText = text.split('\n## Examples')[1] ?? '';
@@ -101,7 +105,7 @@ function screen(file) {
   return {
     name, file: `spec/screens/${file}`, title: text.split('\n')[0].replace(/^# Screen: /, ''),
     template: top.Template ?? '', roles: list(top.Roles), goals: list(top.Goals), never: list(top['Never shows']),
-    states, examples,
+    notBuilt: notYet(top.Built), states, examples,
   };
 }
 
@@ -119,6 +123,12 @@ function flow(file) {
 }
 
 const table = file => tables(readFileSync(join(specDir, file), 'utf8'))[0] ?? [];
+
+/** What the spec marks as not built yet, in words: "request (whole screen)" or "request ST-09 (E-15, E-16)". */
+export function notBuiltYet(spec) {
+  return spec.screens.flatMap(s => s.notBuilt ? [`${s.name} (whole screen)`]
+    : s.states.filter(st => st.notBuilt).map(st => `${s.name} ${st.id} (${s.examples.filter(e => e.State === st.id).map(e => e.Example).join(', ') || 'no eval'})`));
+}
 
 /** The whole spec. */
 export function readSpec() {

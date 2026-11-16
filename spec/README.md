@@ -116,6 +116,7 @@ An example, from `screens/request.md`:
 - **Actions** lists the buttons in order, each with its variant. A button that shows but cannot be used yet says `disabled`.
 - **Says** lists words that must appear.
 - **Rules** and **Goals** say why the state exists.
+- **Built: not yet** marks a state the spec has merged and nobody has built yet. The same line under the screen's title marks the whole screen. The behaviour check and the design system check skip what is marked and list it on every run, and the handoff shows it. The pull request that builds it removes the line.
 
 The examples table is the exact truth. Each row is one eval, with the facts that decide the state, and the state and actions the screen must show. The checks build the screen from each row, so every row is also a test.
 

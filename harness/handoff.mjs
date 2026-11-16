@@ -54,6 +54,7 @@ for (const s of spec.screens) {
     `- Used by: ${s.roles.map(r => `${roleName(r)} (${r})`).join(', ')}`,
     `- Goals: ${s.goals.map(g => `${byId.get(g).Goal} (${g})`).join('; ')}`,
     `- Never shows: ${s.never.join(', ')}`,
+    ...(s.notBuilt ? ['- Not built yet: the screen is in the spec, and nobody has built it.'] : s.states.some(st => st.notBuilt) ? [`- Not built yet: ${s.states.filter(st => st.notBuilt).map(st => st.id).join(', ')}. The backend can build them now; the screen comes later.`] : []),
     '',
     ...spec.flows.filter(f => f.steps.some(x => x.screen === s.name)).flatMap(f => [
       `## Flow: ${f.title}`,
@@ -77,7 +78,7 @@ for (const s of spec.screens) {
     '',
     '| ID | State | When | Status | Actions |',
     '|---|---|---|---|---|',
-    ...s.states.map(st => `| ${st.id} | ${st.name} | ${st.when} | ${st.status ? `${st.status.tone}: "${st.status.text}"` : 'none'} | ${st.actions.length ? st.actions.map(a => `${a.label} (${a.variant}${a.disabled ? ', disabled' : ''})${a.condition ? ` ${a.condition}` : ''}`).join(', ') : 'none'} |`),
+    ...s.states.map(st => `| ${st.id} | ${st.name}${st.notBuilt ? ' (not built yet)' : ''} | ${st.when} | ${st.status ? `${st.status.tone}: "${st.status.text}"` : 'none'} | ${st.actions.length ? st.actions.map(a => `${a.label} (${a.variant}${a.disabled ? ', disabled' : ''})${a.condition ? ` ${a.condition}` : ''}`).join(', ') : 'none'} |`),
     '',
     '## Acceptance tests',
     '',

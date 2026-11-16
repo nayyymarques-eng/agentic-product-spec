@@ -10,6 +10,7 @@ export const out = join(root, '.behaviour');
 /** Builds a screen's module, renders one HTML page per example, and returns the pages. */
 export async function renderExamples(screen, dir, cssBase) {
   const entry = join(root, 'screens', `${screen.name}.tsx`);
+  if (screen.notBuilt) return [];
   if (!existsSync(entry)) return null;
   const outfile = join(out, `${screen.name}.mjs`);
   await build({ entryPoints: [entry], outfile, bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', logLevel: 'silent', external: ['react', 'react-dom'] });
@@ -17,7 +18,8 @@ export async function renderExamples(screen, dir, cssBase) {
   const { renderToStaticMarkup } = await import('react-dom/server');
   const { createElement } = await import('react');
   mkdirSync(dir, { recursive: true });
-  return screen.examples.map(row => {
+  const waiting = new Set(screen.states.filter(s => s.notBuilt).map(s => s.id));
+  return screen.examples.filter(row => !waiting.has(row.State)).map(row => {
     const props = mod.fromExample(row);
     const body = renderToStaticMarkup(createElement(mod.Screen, props));
     const file = join(dir, `${screen.name}-${row.Example}.html`);
