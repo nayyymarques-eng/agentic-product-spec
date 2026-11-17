@@ -36,7 +36,7 @@ This is the last of three rounds. Each round ran three times, on the version nam
 
 1. Let the lead enter the day proof arrived, and the day of an extension or an ask, within the same bounds as the answer date; or drop those events from the answer date's floor. Add an eval for an answer recorded before the proof.
 2. Add flow evals: an action sent after it stopped being offered is refused, records nothing and sends nothing.
-3. Add the four evals above.
+3. Add four evals the screen does not have yet: the Extend dialog open over a request waiting for proof that was not extended (ST-05); the Mark as answered dialog open over a request due soon (ST-02); an extended request answered after its new due date (ST-10); and proof asked for first, then the request extended while still waiting.
 4. Decide whether the support agent sees the day the request reached the shop, and say it in ST-07.
 5. Keep the sentence "It stays at the top of your list until you mark it as answered" in the ST-09 banner.
 6. Word the Extend dialog so it says the lead sends the letter, and show the original due date in the history line of the extension.
