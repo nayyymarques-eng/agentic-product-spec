@@ -213,7 +213,7 @@ A dialog is not a state. It opens over a state, from one of that state's buttons
 - Opens from: Extend                       ← the button that opens it; the dialog shows only while that button is offered
 - Over: ST-01, ST-02, ST-05, ST-08          ← the only states it shows over
 - Title: "Extend the due date by two months"
-- Asks: "Reason, for the letter to the person"
+- Asks: "Why it needs more time: the request is complex, or there are many requests. For the letter to the person"
 - Actions: Extend (primary, disabled until written), Cancel (tertiary)
 - Closes when: the due date passes. Nothing is extended.
 - Rules: BR-02

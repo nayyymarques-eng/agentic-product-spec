@@ -5,7 +5,7 @@ What the product must do, one rule per row, each with the sources it comes from:
 | ID | Rule | Sources | Where |
 |---|---|---|---|
 | BR-01 | The due date is one month after the day the request reached the shop, not the day the support agent sent it on or the day the privacy lead opened it. | PRIV-01, Q-02, Q-03 | request |
-| BR-02 | The privacy lead can extend the due date once, before it passes, by two more months, and only after writing the reason that goes into the letter to the person. | PRIV-02, PRIV-03, D-04, D-07, D-09, Q-04 | request |
+| BR-02 | The privacy lead can extend the due date once, before it passes, by two more months, and only after writing the reason that goes into the letter to the person: the request is complex, or there are many requests. | PRIV-02, PRIV-03, D-04, D-07, D-09, Q-04 | request |
 | BR-03 | A request past its due date and not answered is overdue, and says so until someone closes it. An answer after the due date says how late it was. | PRIV-01, D-02, D-08 | request |
 | BR-04 | The privacy lead marks a request as answered with the date the answer was sent: not after today, and not before the request reached the shop or before anything recorded on it since. The product sends nothing to the person. | PRIV-04, D-01, D-09, Q-05 | request |
 | BR-05 | The privacy lead asks for proof of identity once, before the due date, and only with a reasonable doubt, written down. The due date does not move while the lead waits. | PRIV-07, D-05, D-09, D-10, Q-01, Q-07, Q-08 | request |

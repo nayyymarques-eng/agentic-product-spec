@@ -42,7 +42,7 @@ export function RequestScreen({ request: r, view: v }: { request: Request; view:
   const open = dialogOf(r, v);
   const buttons = actions.map(a => <Button key={a.label} variant={a.variant} disabled={a.disabled}>{a.label}</Button>);
   const dialog = open ? {
-    'DL-01': { title: 'Extend the due date by two months', field: 'Reason, for the letter to the person', hint: 'The new due date goes in the letter, with this reason.' }, // BR-02
+    'DL-01': { title: 'Extend the due date by two months', field: 'Why it needs more time: the request is complex, or there are many requests. For the letter to the person', hint: 'The new due date goes in the letter, with this reason.' }, // BR-02
     'DL-02': { title: 'Ask for proof of identity', field: 'Your doubt about who wrote', hint: 'Ask only for what confirms who they are.' },                    // BR-05
     'DL-03': { title: 'Mark as answered', field: 'Date the answer was sent', hint: 'Not after today, and not before the request reached the shop.' },          // BR-04
   }[open] : null;

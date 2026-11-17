@@ -7,7 +7,7 @@ Structure hash: 56a9e3e9cc83
 - Role: privacy lead (R-01), persona sheet `spec/personas/privacy-lead.md`
 - Reviewer: the synthetic user from grounded-synthetic-user, in a spec review, run three times, each run alone. A person aggregated the runs.
 - Date: 2026-11-17
-- Result: not ready to merge yet. Round 7 agreed on one finding against a decision: D-07 may allow an extension on a ground PRIV-02 does not name. It waits on the person who decided D-07. Every other agreed finding is fixed, an open question, under `## Not covered`, or a follow-up below.
+- Result: round 7 agreed on one finding against a decision: D-07 allowed an extension on a ground PRIV-02 does not name. D-07's owner chose to keep Extend while waiting for proof, on a PRIV-02 ground only, and the wording was fixed; the light review of that fix is `2026-11-17-answer-a-request-light.md`. Every other agreed finding is fixed, an open question, under `## Not covered`, or a follow-up below.
 
 ## How it got here
 
@@ -19,7 +19,7 @@ These are the last rounds. Each round ran three times, on the version named by i
 | 4 | 45dcf789b1d2 | None | The due date in every state the lead sees, the reason and the doubt in the history, dialogs closing when the request is answered elsewhere, 10 evals |
 | 5 | 079fa5cf3a0f | None | The intro of the flow's Decisions section: every decision made for a feature lives in its feature decision log. A wording change, but it changes the hash, so the review ran again |
 | 6 | c31bb90dd434 | None | The states written as a decision table, checked by SPEC-17. The table changes the structure, so the review ran three times again |
-| 7 | b3c9705c4f50 | One: D-07 lets the lead extend because proof is late, and PRIV-02 names only the complexity and number of requests (2 of 3) | Waits on D-07's owner |
+| 7 | b3c9705c4f50 | One: D-07 lets the lead extend because proof is late, and PRIV-02 names only the complexity and number of requests (2 of 3) | D-07, BR-02 and the Extend dialog reworded: extend while waiting only on a PRIV-02 ground. A rewording, so one light run |
 
 ## Agreed findings of rounds 5 to 7, and where each went
 
@@ -39,7 +39,7 @@ Round 6 agreed again on every round 5 finding below, and added three rows. Round
 | Round 6: the extension letter and the proof request leave the product by no step, and no decision says the lead sends them, as D-01 does for the answer | 3 of 3 | Neither | Q-04; follow-up 6 |
 | Round 6: while Q-03 is open, the due date of an extended request takes the later of the two readings, so a lead could be late under the other one | 2 of 3 | Neither | Q-03; follow-up 7 |
 | Round 6: Ask for proof of identity is offered on the due date itself, while BR-05 says "before the due date" | 1 of 3, kept because it is the spec against itself | Neither | Follow-up 8 |
-| Round 7: D-07 offers Extend while waiting for proof, because proof can arrive late. PRIV-02 allows an extension for the complexity and number of requests | 2 of 3 | D-07, and possibly PRIV-02 (`to confirm`) | Waits on D-07's owner; with Q-01 for a lawyer |
+| Round 7: D-07 offers Extend while waiting for proof, because proof can arrive late. PRIV-02 allows an extension for the complexity and number of requests | 2 of 3 | D-07, and possibly PRIV-02 (`to confirm`) | Fixed: D-07 reworded by its owner |
 | Round 7: the record of an ask keeps the doubt but not what was asked of the person, so the shop cannot show it asked only for what PRIV-07 allows | 3 of 3 | Neither: a risk under PRIV-07, not a breach (2 of 3) | Follow-up 9 |
 | Round 7: the answer-date floor of round 5, again | 3 of 3 | Neither (2 of 3; one run read it as against D-01) | Follow-up 1 |
 | Round 7: evals missing: an extended request answered on time and late, a support agent on a request answered late, and the round 5 dialog cases | 3 of 3 | Neither | Follow-up 3 |

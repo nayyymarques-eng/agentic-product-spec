@@ -50,7 +50,7 @@ Each rule is a requirement. Its sources say why, so a change upstream finds this
 | ID | Rule | Sources |
 |---|---|---|
 | BR-01 | The due date is one month after the day the request reached the shop, not the day the support agent sent it on or the day the privacy lead opened it. | PRIV-01, Q-02, Q-03 |
-| BR-02 | The privacy lead can extend the due date once, before it passes, by two more months, and only after writing the reason that goes into the letter to the person. | PRIV-02, PRIV-03, D-04, D-07, D-09, Q-04 |
+| BR-02 | The privacy lead can extend the due date once, before it passes, by two more months, and only after writing the reason that goes into the letter to the person: the request is complex, or there are many requests. | PRIV-02, PRIV-03, D-04, D-07, D-09, Q-04 |
 | BR-03 | A request past its due date and not answered is overdue, and says so until someone closes it. An answer after the due date says how late it was. | PRIV-01, D-02, D-08 |
 | BR-04 | The privacy lead marks a request as answered with the date the answer was sent: not after today, and not before the request reached the shop or before anything recorded on it since. The product sends nothing to the person. | PRIV-04, D-01, D-09, Q-05 |
 | BR-05 | The privacy lead asks for proof of identity once, before the due date, and only with a reasonable doubt, written down. The due date does not move while the lead waits. | PRIV-07, D-05, D-09, D-10, Q-01, Q-07, Q-08 |
@@ -101,7 +101,7 @@ A dialog opens over a state, which keeps its status and banner. It shows only ov
 
 | ID | Dialog | Opens from | Over | Asks | Actions | Closes when |
 |---|---|---|---|---|---|---|
-| DL-01 | Extend the due date by two months | Extend | ST-01, ST-02, ST-05, ST-08 | Reason, for the letter to the person | Extend (primary, disabled until written), Cancel (tertiary) | the due date passes, or the request is extended or answered in another tab. Nothing is extended. |
+| DL-01 | Extend the due date by two months | Extend | ST-01, ST-02, ST-05, ST-08 | Why it needs more time: the request is complex, or there are many requests. For the letter to the person | Extend (primary, disabled until written), Cancel (tertiary) | the due date passes, or the request is extended or answered in another tab. Nothing is extended. |
 | DL-02 | Ask for proof of identity | Ask for proof of identity | ST-01, ST-02, ST-04 | Your doubt about who wrote | Ask (primary, disabled until written), Cancel (tertiary) | the due date passes, or proof is asked for or the request answered in another tab. Nothing is asked. |
 | DL-03 | Mark as answered | Mark as answered | ST-01, ST-02, ST-03, ST-04, ST-05, ST-08, ST-09 | Date the answer was sent | Mark as answered (primary, disabled until written), Cancel (tertiary) | the request is answered in the meantime, by someone else or in another tab. While it is not answered, answering is always possible. |
 
@@ -176,7 +176,7 @@ From the flow Answer a request, for what no screen shows. The backend's own test
 - **D-04.** A request is extended once, always by the full two months.
 - **D-05.** While the lead waits for proof of identity, the due date does not move.
 - **D-06.** A request is "due soon" from 7 days before its due date.
-- **D-07.** While the lead waits for proof of identity, the request can still be extended, and it shows as due soon in its last 7 days.
+- **D-07.** While the lead waits for proof of identity, the request can still be extended, on a ground PRIV-02 gives: the request is complex, or there are many requests. Waiting for proof is not a ground on its own. The request shows as due soon in its last 7 days.
 - **D-08.** An answer sent after the due date shows as answered late, with the number of days.
 - **D-09.** Each dialog that needs a written reason, doubt or date keeps its main button disabled until it is written.
 - **D-10.** Proof of identity is asked for once per request.

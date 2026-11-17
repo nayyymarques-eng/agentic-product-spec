@@ -146,7 +146,7 @@ A dialog opens over a state, from one of its buttons, and leaves that state as i
 - Opens from: Extend
 - Over: ST-01, ST-02, ST-05, ST-08
 - Title: "Extend the due date by two months"
-- Asks: "Reason, for the letter to the person"
+- Asks: "Why it needs more time: the request is complex, or there are many requests. For the letter to the person"
 - Actions: Extend (primary, disabled until written), Cancel (tertiary)
 - Closes when: the due date passes, or the request is extended or answered in another tab. Nothing is extended.
 - Rules: BR-02
