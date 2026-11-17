@@ -128,4 +128,5 @@ The examples table is the exact truth. Each row is one eval, with the facts that
 | Spec review | Before the screen is built | A synthetic user reads a feature's flow, screens and evals as each role, against the official rules and the persona sheets, and respects the decisions | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
 | Behaviour check | Every pull request that touches the screen | The built screen against every state and every example | `npm run behaviour` |
 | Design system check | Every pull request that touches the screen | How each state looks, with the design system's own harness | `npm run look` |
+| Context | Before an agent builds, reviews or tests a feature | Nothing: it prints the feature's part of the spec, following the IDs each state cites and each decision's Applies to | `npm run context <flow or screen>` |
 | Handoff | Every change to the spec | Writes the handoff from the spec, for whoever builds the backend | `npm run handoff` |

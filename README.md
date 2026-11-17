@@ -36,6 +36,7 @@ The spec is written once and used in several ways. Each one reads the same files
 | QA | Run the evals against the built screen (`npm run behaviour`). Each failure names the eval and what differs from the spec. |
 | Review before building | A synthetic user reads a feature as each role, against the official rules and the persona sheets (`reviews/README.md`). |
 | Hand it to the backend | `npm run handoff` writes the rules, the flow and one acceptance test per eval, for whoever builds the backend. |
+| Give an agent one feature | `npm run context answer-a-request` prints that feature's flow and screens, and only the rules, decisions, questions and persona sheets they touch. The agent reads that, not the whole spec. |
 | Answer a question | Search for an ID, such as BR-02, to find every flow, state, eval and line of code that uses it. |
 
 ## The example in this kit
