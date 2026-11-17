@@ -1,6 +1,6 @@
 // Gate 2, on the built screen: run on every pull request that touches a screen or the spec.
-// For each example row in spec/screens/<screen>.md, it builds the screen with those facts, opens it in headless
-// Chromium and checks what shows against the state the row names. Each failure names the check, the example and where.
+// For each eval row in spec/screens/<screen>.md, it builds the screen with those facts, opens it in headless
+// Chromium and checks what shows against the state the row names. Each failure names the check, the eval and where.
 // Usage: npm run behaviour
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
@@ -15,7 +15,7 @@ const ds = 'node_modules/ai-ready-design-system';
 const day = d => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 const daysTo = (from, to) => Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 
-/** Fills the {words} of a screen from an example row. */
+/** Fills the {words} of a screen from an eval row. */
 function fill(text, row) {
   const left = daysTo(row.Today, row.Due);
   const words = {
@@ -72,7 +72,7 @@ export async function checkBehaviour() {
 
     for (const { row, file, logic } of pages) {
       checked++;
-      const ex = row.Example;
+      const ex = row.Eval;
       const want = screen.states.find(s => s.id === row.State);
       // BEH-07: the rules, before anything is drawn: due date, state and actions from the code alone.
       if (logic.due !== row.Due) fail('BEH-07', ex, `due date ${logic.due}, the spec says ${row.Due}`);
@@ -114,7 +114,7 @@ export async function checkBehaviour() {
 }
 
 const { fails, checked, waiting } = await checkBehaviour();
-console.log(`Behaviour: ${checked} examples checked.`);
+console.log(`Behaviour: ${checked} evals checked.`);
 if (waiting.length) console.log(`Not built yet, so not checked: ${waiting.join('; ')}. Remove the mark in the pull request that builds it.`);
 if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}`); process.exit(1); }
 console.log('PASS: BEH-01 to BEH-09');

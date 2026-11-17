@@ -1,4 +1,4 @@
-// Renders a screen once per example row of its spec, as static HTML, for the behaviour check and the design system check.
+// Renders a screen once per eval row of its spec, as static HTML, for the behaviour check and the design system check.
 import { build } from 'esbuild';
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -7,7 +7,7 @@ import { root } from './spec.mjs';
 
 export const out = join(root, '.behaviour');
 
-/** Builds a screen's module, renders one HTML page per example, and returns the pages. */
+/** Builds a screen's module, renders one HTML page per eval, and returns the pages. */
 export async function renderExamples(screen, dir, cssBase) {
   const entry = join(root, 'screens', `${screen.name}.tsx`);
   if (screen.notBuilt) return [];
@@ -19,11 +19,11 @@ export async function renderExamples(screen, dir, cssBase) {
   const { createElement } = await import('react');
   mkdirSync(dir, { recursive: true });
   const waiting = new Set(screen.states.filter(s => s.notBuilt).map(s => s.id));
-  return screen.examples.filter(row => !waiting.has(row.State)).map(row => {
+  return screen.evals.filter(row => !waiting.has(row.State)).map(row => {
     const props = mod.fromExample(row);
     const body = renderToStaticMarkup(createElement(mod.Screen, props));
-    const file = join(dir, `${screen.name}-${row.Example}.html`);
-    writeFileSync(file, `<!doctype html>\n<html lang="en-GB">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${screen.title}, ${row.Example}</title>\n<link rel="stylesheet" href="${cssBase}/tokens.css">\n<link rel="stylesheet" href="${cssBase}/components.css">\n</head>\n<body>\n${body}\n</body>\n</html>\n`);
+    const file = join(dir, `${screen.name}-${row.Eval}.html`);
+    writeFileSync(file, `<!doctype html>\n<html lang="en-GB">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${screen.title}, ${row.Eval}</title>\n<link rel="stylesheet" href="${cssBase}/tokens.css">\n<link rel="stylesheet" href="${cssBase}/components.css">\n</head>\n<body>\n${body}\n</body>\n</html>\n`);
     return { row, file, logic: mod.behaviour(props) };
   });
 }

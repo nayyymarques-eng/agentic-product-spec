@@ -24,6 +24,6 @@ From the email a person sends to the shop to the answer. One flow per job a role
 
 What the flow must do that no screen shows. Each row is one eval: the facts, and what must be true after. The handoff lists them as acceptance tests for whoever builds the backend, beside the screen's evals.
 
-| Example | Given | Then | Rules |
+| Eval | Given | Then | Rules |
 |---|---|---|---|
 | E-15 | The privacy lead marks a request as answered, with the date the answer was sent | The product sends no email or message to the person, and records the date the lead entered | BR-04 |

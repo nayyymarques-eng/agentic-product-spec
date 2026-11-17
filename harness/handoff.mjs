@@ -85,16 +85,16 @@ for (const s of spec.screens) {
     '',
     `One per eval in the spec. \`npm run behaviour\` runs the screen's evals against the built screen.`,
     '',
-    ...s.examples.flatMap(e => {
+    ...s.evals.flatMap(e => {
       const st = s.states.find(x => x.id === e.State);
       const acts = list(e.Actions);
-      return [`- **${e.Example}.** Given ${given(e)}. Then the due date is ${day(e.Due)}, the screen is in ${e.State} ${st?.name ?? ''}, and it offers ${acts.length ? acts.join(', ') : 'no action'}.`];
+      return [`- **${e.Eval}.** Given ${given(e)}. Then the due date is ${day(e.Due)}, the screen is in ${e.State} ${st?.name ?? ''}, and it offers ${acts.length ? acts.join(', ') : 'no action'}.`];
     }),
     ...spec.flows.filter(f => f.steps.some(x => x.screen === s.name) && f.evals.length).flatMap(f => [
       '',
       `From the flow ${f.title}, for what no screen shows. The backend's own tests run these.`,
       '',
-      ...f.evals.map(e => `- **${e.Example}.** Given ${e.Given.charAt(0).toLowerCase()}${e.Given.slice(1)}. Then ${e.Then.charAt(0).toLowerCase()}${e.Then.slice(1)}. (${e.rules.join(', ')})`),
+      ...f.evals.map(e => `- **${e.Eval}.** Given ${e.Given.charAt(0).toLowerCase()}${e.Given.slice(1)}. Then ${e.Then.charAt(0).toLowerCase()}${e.Then.slice(1)}. (${e.rules.join(', ')})`),
     ]),
     '',
     '## Decisions behind it',

@@ -86,7 +86,7 @@ export default function Sample() {
 /** The screen, for the checks. */
 export const Screen = RequestScreen;
 
-/** Turns one example row of the spec into the screen's props. */
+/** Turns one eval row of the spec into the screen's props. */
 export function fromExample(row: Record<string, string>): { request: Request; view: View } {
   const v = (k: string) => (row[k] && row[k] !== '-' ? row[k] : undefined);
   return {

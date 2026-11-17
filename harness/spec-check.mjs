@@ -24,9 +24,9 @@ for (const s of spec.screens) for (const st of s.states) {
   known.add(`${s.name}:${st.id}`);
 }
 const evalIds = new Set();
-for (const e of [...spec.screens.flatMap(s => s.examples), ...spec.flows.flatMap(f => f.evals)]) {
-  if (evalIds.has(e.Example)) fail('SPEC-01', `${e.Example} is used twice`, 'spec/');
-  evalIds.add(e.Example);
+for (const e of [...spec.screens.flatMap(s => s.evals), ...spec.flows.flatMap(f => f.evals)]) {
+  if (evalIds.has(e.Eval)) fail('SPEC-01', `${e.Eval} is used twice`, 'spec/');
+  evalIds.add(e.Eval);
 }
 
 // SPEC-02: every source a rule cites exists, and every rule has one.
@@ -91,11 +91,11 @@ for (const s of spec.screens) for (const st of s.states) for (const a of st.acti
   if (a.disabled && !states('button').includes('disabled')) triage.push(`SPEC-07 ${st.id} ("${a.label}" is disabled; the button contract has no disabled state)  ← ${s.file}, contracts/button.md`);
 }
 
-// SPEC-06: every state has at least one example, and every example names a state that exists.
+// SPEC-06: every state has at least one eval, and every eval names a state that exists.
 for (const s of spec.screens) {
   const ids = new Set(s.states.map(st => st.id));
-  for (const st of s.states) if (!s.examples.some(e => e.State === st.id)) fail('SPEC-06', `${st.id} has no example`, s.file);
-  for (const e of s.examples) if (!ids.has(e.State)) fail('SPEC-06', `${e.Example} names ${e.State}, which is not a state`, s.file);
+  for (const st of s.states) if (!s.evals.some(e => e.State === st.id)) fail('SPEC-06', `${st.id} has no eval`, s.file);
+  for (const e of s.evals) if (!ids.has(e.State)) fail('SPEC-06', `${e.Eval} names ${e.State}, which is not a state`, s.file);
 }
 
 // SPEC-08: every flow starts from a trigger and ends; every step is reached, goes somewhere that exists,
@@ -149,16 +149,16 @@ for (const q of spec.questions) {
     fail('SPEC-12', `${q.ID} reaches beyond one feature (${where.join(', ')}); answer it, as a decision, before this merges`, 'spec/questions.md');
 }
 
-// SPEC-13: every business rule has at least one eval: a screen example on a state that applies it, or a flow eval
+// SPEC-13: every business rule has at least one eval: a screen eval on a state that applies it, or a flow eval
 // for what no screen shows. A rule no eval tests is a hole the checks cannot see.
 for (const r of spec.rules) {
-  const onScreen = spec.screens.some(s => s.states.some(st => st.rules.includes(r.ID) && s.examples.some(e => e.State === st.id)));
+  const onScreen = spec.screens.some(s => s.states.some(st => st.rules.includes(r.ID) && s.evals.some(e => e.State === st.id)));
   const inFlow = spec.flows.some(f => f.evals.some(e => e.rules.includes(r.ID)));
-  if (!onScreen && !inFlow) fail('SPEC-13', `${r.ID} has no eval; add an example on a state that applies it, or a flow eval`, 'spec/rules.md');
+  if (!onScreen && !inFlow) fail('SPEC-13', `${r.ID} has no eval; add an eval on a state that applies it, or a flow eval`, 'spec/rules.md');
 }
 for (const f of spec.flows) for (const e of f.evals) {
-  if (!e.Given || !e.Then) fail('SPEC-13', `${e.Example} needs both Given and Then`, f.file);
-  for (const id of e.rules) if (!spec.rules.some(r => r.ID === id)) fail('SPEC-13', `${e.Example} cites ${id}, which is not a rule`, f.file);
+  if (!e.Given || !e.Then) fail('SPEC-13', `${e.Eval} needs both Given and Then`, f.file);
+  for (const id of e.rules) if (!spec.rules.some(r => r.ID === id)) fail('SPEC-13', `${e.Eval} cites ${id}, which is not a rule`, f.file);
 }
 
 // An external rule still "to confirm" after its "Check again on" date is a warning, not a failure: someone reads
@@ -167,7 +167,7 @@ const today = new Date().toISOString().slice(0, 10);
 const stale = spec.sources.filter(r => /to confirm/i.test(r.Mark ?? '') && r['Check again on'] && r['Check again on'] < today)
   .map(r => `${r.ID} is still "to confirm", and was due to be checked again on ${r['Check again on']}  ← ${r.file}`);
 
-const counts = spec.screens.map(s => `${s.name}: ${s.states.length} states, ${s.examples.length} examples`).join('; ');
+const counts = spec.screens.map(s => `${s.name}: ${s.states.length} states, ${s.evals.length} evals`).join('; ');
 console.log(`Spec: ${spec.flows.length} flow, ${spec.rules.length} rules, ${spec.goals.length} goals, ${spec.decisions.length} decisions, ${spec.questions.length} open questions, ${spec.flows.reduce((n, f) => n + f.evals.length, 0)} flow evals. ${counts}.`);
 if (stale.length) console.log(`External rules to read again:\n${stale.join('\n')}`);
 if (triage.length) console.log(`To triage, for the design system owner:\n${[...new Set(triage)].join('\n')}`);

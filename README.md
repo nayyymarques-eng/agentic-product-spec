@@ -6,13 +6,15 @@ A set of files that hold everything a product knows that an agent cannot find in
 - **The checks** are scripts. They check that the spec is complete, that the built screen does what the spec says, and that the screen uses the design system correctly.
 - **The handoff** is a file written by a script from the spec, for anyone who builds from it: the rules, the steps of the task, the screen's states and one acceptance test per eval.
 
-It is one source with several readers. AI tools build the product from it, a synthetic user reviews it, and the checks run at each step, not only at the end.
+It is one source of truth for product decisions, used in every way the product is made: ideation, definition, testing and development. A decision changed once reaches every one of them, and the checks run at each step, not only at the end.
 
-The full write-up: [A product spec agents can build from](https://nayaramarques.com/product-spec).
+The full write-up: [One source of truth for product decisions](https://nayaramarques.com/product-spec).
 
 ## Why it exists
 
-A design system says which components a screen uses and how they look. It does not say what the screen does: when a request counts as late, who may give more time, which button disappears once the work is done. Nor does it say who the users are, which laws apply, or what the team already decided. An AI tool that builds the screen has to guess those things, and each screen guesses differently. A check at the end sees how the screen looks, not whether it follows the business rules.
+Every product runs on decisions: who it is for, which rules it follows, what the team chose and why, what each screen does in each situation. Each person keeps a copy: the designer in Figma, the tester in a test plan, the developer in the code, the AI tool in its prompt. When a decision changes, some copies change and some do not, and the copies drift.
+
+AI agents make the drift faster. An agent builds from what is in its context and fills every gap with a guess: it can follow a design system to the pixel and still decide on its own when a request is overdue, or which button goes away once it is answered. The spec is the one place those decisions are written, with why, so every person and every agent works from the same ones.
 
 ## The two levels of the spec
 
@@ -20,7 +22,7 @@ One spec per product, in the `spec/` folder.
 
 | Level | What it holds | Where |
 |---|---|---|
-| Product | What holds for every feature: the roles (kinds of user) and their persona sheets, the goals of each role, the external rules, the product decisions, the business rules with their sources, the open questions and a glossary | `spec/roles.md`, `personas/`, `goals.md`, `sources/`, `decisions.md`, `rules.md`, `questions.md`, `glossary.md` |
+| Product | What the whole product shares: the roles (kinds of user) and their persona sheets, the goals of each role, the external rules, the product decisions, the business rules with their sources, the open questions and a glossary | `spec/roles.md`, `personas/`, `goals.md`, `sources/`, `decisions.md`, `rules.md`, `questions.md`, `glossary.md` |
 | Feature | What each feature does: one file per task, with each step, who acts and the screen state it lands on; one file per screen, with every state and a table of evals | `spec/flows/`, `spec/screens/` |
 
 Every item has an ID: roles R-01, goals G-01, external rules PRIV-01, decisions D-01, business rules BR-01, questions Q-01, flow steps F-01, screen states ST-01, evals E-01. Code, checks and the handoff cite these IDs, so a search for an ID finds everything that uses it.
@@ -35,7 +37,7 @@ The spec is written once and used in several ways. Each one reads the same files
 | Change a feature | A law changes, a product decision is made, or someone finds a problem. Change the spec first: the rule, the step, the state and an eval that shows the change. Then the screen. If the spec merges first, mark the new state "Built: not yet"; the checks skip it until the screen is built. A decision that changes moves to `decisions-replaced.md`, and the spec check names everything that still cites it. |
 | Start from what you have | For a product that already exists: write the flow of one task as the product does it today, from the code and the screens. A person confirms which of those behaviours were chosen on purpose; those become decisions, and the ones nobody can explain become questions. Then the next task. |
 | QA | Run the evals against the built screen (`npm run behaviour`). Each failure names the eval and what differs from the spec. |
-| Review before building | A synthetic user reads a feature as each role, against the external rules and the persona sheets, three times; the findings two runs agree on are kept (`reviews/README.md`). |
+| Review before merging | Before a change merges into the spec, a synthetic user reads the feature as each role, against the external rules and the persona sheets, three times; the findings two runs agree on are kept (`reviews/README.md`). |
 | Keep the external rules current | Optional, for products whose external rules change often, such as regulated ones. The rules watch (`.claude/agents/rules-watch.md`) reads the sources on a schedule and lists everything that depends on a rule that changed. It belongs to the spec: a synthetic user reads the rules from here. |
 | Hand it to the backend | `npm run handoff` writes the rules, the flow and one acceptance test per eval, for whoever builds the backend. |
 | Give an agent one feature | `npm run context answer-a-request` prints that feature's flow and screens, and only the rules, decisions, questions and persona sheets they touch. The agent reads that, not the whole spec. |
@@ -84,11 +86,11 @@ Each break below was made on purpose, one at a time. Each line is what the check
 | A rule a state applies is named nowhere in the code | `BEH-09 code (BR-06 is applied by a state, and named nowhere in src/request.ts or screens/request.tsx)` |
 | A rule cites a decision that was replaced | `SPEC-11 (BR-02 cites D-07, which was replaced by D-04)` |
 | An open question reaches a second flow | `SPEC-12 (Q-01 reaches beyond one feature (answer-a-request, close-a-request); answer it, as a decision, before this merges)` |
-| A rule has no eval | `SPEC-13 (BR-09 has no eval; add an example on a state that applies it, or a flow eval)` |
+| A rule has no eval | `SPEC-13 (BR-09 has no eval; add an eval on a state that applies it, or a flow eval)` |
 | A rule cites a decision that does not exist | `SPEC-02 (BR-07 cites D-09, which does not exist)` |
 | No state applies a rule | `SPEC-03 (BR-08 is applied by no state of request)` |
 | A state uses a badge the design system does not have | `SPEC-05 (ST-06: badge "success" is not a badge variant)` |
-| A state has no eval | `SPEC-06 (ST-04 has no example)` |
+| A state has no eval | `SPEC-06 (ST-04 has no eval)` |
 | A step of the flow was removed | `SPEC-09 (ST-05 is reached by no step of a flow)` |
 | A step goes to a step that does not exist | `SPEC-08 (F-02 goes to F-09, which is not a step)` |
 

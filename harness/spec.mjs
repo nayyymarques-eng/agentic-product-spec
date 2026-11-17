@@ -100,12 +100,11 @@ function screen(file) {
       notBuilt: notYet(b.Built),
     };
   });
-  const examplesText = text.split('\n## Examples')[1] ?? '';
-  const examples = tables(examplesText)[0] ?? [];
+  const evals = tables(text.split('\n## Evals')[1] ?? '')[0] ?? [];
   return {
     name, file: `spec/screens/${file}`, title: text.split('\n')[0].replace(/^# Screen: /, ''),
     template: top.Template ?? '', roles: list(top.Roles), goals: list(top.Goals), never: list(top['Never shows']),
-    notBuilt: notYet(top.Built), states, examples,
+    notBuilt: notYet(top.Built), states, evals,
   };
 }
 
@@ -129,7 +128,7 @@ const table = file => existsSync(join(specDir, file)) ? tables(readFileSync(join
 /** What the spec marks as not built yet, in words: "request (whole screen)" or "request ST-09 (E-20, E-21)". */
 export function notBuiltYet(spec) {
   return spec.screens.flatMap(s => s.notBuilt ? [`${s.name} (whole screen)`]
-    : s.states.filter(st => st.notBuilt).map(st => `${s.name} ${st.id} (${s.examples.filter(e => e.State === st.id).map(e => e.Example).join(', ') || 'no eval'})`));
+    : s.states.filter(st => st.notBuilt).map(st => `${s.name} ${st.id} (${s.evals.filter(e => e.State === st.id).map(e => e.Eval).join(', ') || 'no eval'})`));
 }
 
 /** The whole spec. */

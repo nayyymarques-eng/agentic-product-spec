@@ -9,7 +9,7 @@ One request, opened from the privacy lead's list: the person's message, its due 
 
 ## Words
 
-The words in braces come from the example row.
+The words in braces come from the eval row.
 
 | Word | What it is |
 |---|---|
@@ -91,11 +91,11 @@ When two states could apply, the first one in this list wins.
 - Rules: BR-01, BR-02, BR-05, BR-06
 - Goals: G-01
 
-## Examples
+## Evals
 
 Each row is one eval and one test. Viewer, Received, Extended on, Proof asked on, Answered on, Dialog and Today are the facts. Due, State and Actions are what the screen must show. A dash means none.
 
-| Example | Viewer | Received | Extended on | Proof asked on | Answered on | Dialog | Today | Due | State | Actions |
+| Eval | Viewer | Received | Extended on | Proof asked on | Answered on | Dialog | Today | Due | State | Actions |
 |---|---|---|---|---|---|---|---|---|---|---|
 | E-01 | R-01 | 2026-11-03 | - | - | - | - | 2026-11-10 | 2026-12-03 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
 | E-02 | R-01 | 2026-11-03 | - | - | - | - | 2026-11-28 | 2026-12-03 | ST-02 | Mark as answered, Extend, Ask for proof of identity |

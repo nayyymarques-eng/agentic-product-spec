@@ -1,4 +1,4 @@
-// The design system's own check, on every state: renders each example and runs ai-ready-design-system's harness
+// The design system's own check, on every state: renders each eval and runs ai-ready-design-system's harness
 // (21 checks: components, tokens, type, spacing, colour, contrast, titles, layout at 375px) on the result.
 // Usage: npm run look
 import { execFileSync } from 'node:child_process';

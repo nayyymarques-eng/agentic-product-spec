@@ -1,10 +1,10 @@
 # The spec
 
-This folder is everything the product knows that an agent cannot look up in the code: who the users are, the external rules, the product decisions, the business rules, and what each feature does. It is written once. AI tools build from it, a synthetic user reviews it, and the checks test the product against it. It says nothing about how a screen looks: the design system says that.
+This folder is everything the product knows that an agent cannot look up in the code: who the users are, the external rules, the product decisions, the business rules, and what each feature does. It is written once, and every way of making the product uses it: ideation, definition, testing and development. It says nothing about how a screen looks: the design system says that.
 
 The spec has two levels.
 
-- **The product**: what holds for every feature. The files at the top of this folder, `sources/` and `personas/`.
+- **The product**: what the whole product shares: its users, its rules and its decisions, some of which apply to one feature only. The files at the top of this folder, `sources/` and `personas/`.
 - **The features**: what each feature does. `flows/`, one file per task, and `screens/`, one file per screen. A screen can sit in several flows.
 
 Everything in this folder is an example for a made-up product: an inbox where a shop's privacy lead answers people's requests about their personal data, under the GDPR. Replace it with your own.
@@ -94,7 +94,7 @@ The spec check reads the flow both ways: every step must land on a state that ex
 Some of what a flow does shows on no screen, such as a message the product must never send. It gets an eval under `## Evals`, in the flow file:
 
 ```
-| Example | Given | Then | Rules |
+| Eval | Given | Then | Rules |
 | E-15 | The privacy lead marks a request as answered, with the date the answer was sent | The product sends no email or message to the person, and records the date the lead entered | BR-04 |
 ```
 
@@ -125,25 +125,30 @@ An example, from `screens/request.md`:
 - Goals: G-01, G-02
 ```
 
-- **When** says, in words, when the screen is in this state. The examples below make it exact.
+- **When** says, in words, when the screen is in this state. The evals below make it exact.
 - **Status**, **Banner** and **Dialog** name a component of the design system, its variant and the words it shows. `none` means the state has none.
 - **Actions** lists the buttons in order, each with its variant. A button that shows but cannot be used yet says `disabled`.
 - **Says** lists words that must appear.
 - **Rules** and **Goals** say why the state exists.
 - **Built: not yet** marks a state the spec has merged and nobody has built yet. The same line under the screen's title marks the whole screen. The behaviour check and the design system check skip what is marked and list it on every run, and the handoff shows it. The pull request that builds it removes the line.
 
-The examples table is the exact truth. Each row is one eval, with the facts that decide the state, and the state and actions the screen must show. The checks build the screen from each row, so every row is also a test.
+The evals table is the exact truth. Each row is one eval, with the facts that decide the state, and the state and actions the screen must show. The checks build the screen from each row, so every row is also a test.
 
 ## Where the checks come in
 
 | Gate | When | What it checks | Run |
 |---|---|---|---|
-| Spec check | Every change to the spec | IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and every state is reached, every state and every rule covered by an eval, nothing cites a replaced decision, no open question reaches beyond one feature, every component named exists in the design system. It also lists external rules still "to confirm" past their "Check again on" date | `npm run spec` |
-| Spec review | Before the screen is built | A synthetic user reads a feature's flow, screens and evals as each role, against the external rules and the persona sheets, and respects the decisions. Run three times; keep what two runs agree on | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
+| Spec check | Every change to the spec | What is missing or out of date: IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and every state is reached, every state and every rule covered by an eval, nothing cites a replaced decision, no open question reaches beyond one feature, every component named exists in the design system. It also lists external rules still "to confirm" past their "Check again on" date | `npm run spec` |
+| Spec review | Before a change merges into the spec | A synthetic user reads a feature's flow, screens and evals as each role, against the external rules and the persona sheets, and respects the decisions. Run three times; keep what two runs agree on | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
 | Rules watch, optional | On a schedule, when the external rules change often, as in a regulated product | Reads the sources again, turns a changed rule back to "to confirm", and lists everything that depends on it | `.claude/agents/rules-watch.md` |
-| Behaviour check | Every pull request that touches the screen | The built screen against every state and every example, and every rule a state applies named in the screen's code | `npm run behaviour` |
+| Behaviour check | Every pull request that touches the screen | The built screen against every state and every eval, and every rule a state applies named in the screen's code | `npm run behaviour` |
 | Design system check | Every pull request that touches the screen | How each state looks, with the design system's own harness | `npm run look` |
-| Context | Before an agent builds, reviews or tests a feature | Nothing: it prints the feature's part of the spec, following the IDs each state cites and each decision's Applies to | `npm run context <flow or screen>` |
+
+Two scripts check nothing, and help use the spec:
+
+| Script | When | What it does | Run |
+|---|---|---|---|
+| Context | Before an agent builds, reviews or tests a feature | Prints the feature's part of the spec, following the IDs each state cites and each decision's and question's Applies to | `npm run context <flow or screen>` |
 | Handoff | Every change to the spec | Writes the handoff from the spec, for whoever builds the backend | `npm run handoff` |
 
 Who must approve a change to each part, such as legal for `sources/` and product for `decisions.md`, is set in `.github/CODEOWNERS`.
