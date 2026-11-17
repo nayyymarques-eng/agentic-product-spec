@@ -11,4 +11,6 @@ A model can miss a finding or invent one, and two runs of the same review differ
 
 Each report names the spec hash and the structure hash of the feature it read, in two lines, `Spec hash: <hash>` and `Structure hash: <hash>`; `npm run context <flow>` prints both. The spec check fails until a report names the current spec hash, so every change to the flow or its screens needs a new review. A change that only rewords keeps the structure hash, and needs only a light review, run once: its report starts with the line `Review: light`. See `spec/README.md`, "How much review a change needs".
 
+When a mistake gets past a gate and is found later, by a later review, a test or a person, it goes in `misses.md`: what was missed, which gate missed it, and what changed so it cannot get past again. A miss a script can see becomes a check. A miss only a model can see becomes a question in the review. A list of known problems planted in a copy of the spec tests the review itself: run it again when the review's instructions, the model or the kit change, and it must still find what it found before.
+
 Reports go in this folder. The rules watch, which keeps the external rules current, is in `.claude/agents/rules-watch.md` and belongs to the spec: if the synthetic user's kit brings its own copy, use this one. The review of the example is in this folder.

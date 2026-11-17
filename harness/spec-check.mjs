@@ -246,6 +246,36 @@ for (const s of spec.screens.filter(x => x.conditions.length)) {
   }
 }
 
+// SPEC-18: a step says where the request goes when time moves it on. A condition read from Today takes its
+// values in the order the table lists them, as days pass. Each state a step lands on can move that way to
+// another state; the step, or a step its Next names, lands there. Otherwise the flow has a missing step: the
+// kind a review by a model tends to miss, because nothing written is wrong (reviews/misses.md).
+for (const f of spec.flows) for (const x of f.steps) {
+  const s = spec.screens.find(y => y.name === x.screen);
+  if (!s || !s.conditions.length || !x.states.length) continue;
+  const timed = s.conditions.filter(c => c.values.some(v => v.test?.columns.includes('Today')));
+  if (!timed.length) continue;
+  const matches = (r, sit) => s.conditions.every(c => !r.cells[c.name] || r.cells[c.name].includes(sit[c.name]));
+  const first = sit => s.decision.find(r => matches(r, sit))?.state;
+  let situations = [{}];
+  for (const c of s.conditions) situations = situations.flatMap(sit => c.values.map(v => ({ ...sit, [c.name]: v.value })));
+  const covered = new Set([...x.states, ...f.steps.filter(y => x.to.includes(y.id) && y.screen === x.screen).flatMap(y => y.states)]);
+  const told = new Set();
+  for (const sit of situations) {
+    const from = first(sit);
+    if (!x.states.includes(from)) continue;
+    for (const c of timed) {
+      const at = c.values.findIndex(v => v.value === sit[c.name]);
+      for (const v of c.values.slice(at + 1)) {
+        const to = first({ ...sit, [c.name]: v.value });
+        if (!to || covered.has(to) || told.has(to)) continue;
+        told.add(to);
+        fail('SPEC-18', `${x.id} lands on ${from}; as days pass it becomes ${to} (${c.name} ${v.value}), and neither ${x.id} nor a step in its Next lands on ${to}`, f.file);
+      }
+    }
+  }
+}
+
 // SPEC-14: every feature has a spec review of its current version. A review report in reviews/ names the feature's
 // spec hash (npm run context prints it); a change to the flow or its screens changes the hash, so the review runs again.
 // A light review, one run for a change that only rewords, counts only when the structure hash it names is the one of
@@ -271,4 +301,4 @@ console.log(`Spec: ${spec.flows.length} flow, ${spec.rules.length} rules, ${spec
 if (stale.length) console.log(`External rules to read again:\n${stale.join('\n')}`);
 if (triage.length) console.log(`To triage, for the design system owner:\n${[...new Set(triage)].join('\n')}`);
 if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}`); process.exit(1); }
-console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-17');
+console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-18');

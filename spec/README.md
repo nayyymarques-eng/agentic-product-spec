@@ -139,6 +139,8 @@ An example row, from `flows/answer-a-request.md`:
 
 The spec check reads the flow both ways: every step must land on a state and open a dialog that exist, and every state and every dialog must be reached by a step. A state no step reaches means a step is missing, or the state should not exist.
 
+On a screen with a decision table, the check (SPEC-18) also follows time. A condition read from Today, such as the due date, takes its values in the order the table lists them as days pass. So a request that lands on Extended can become Due soon, then Overdue, with nobody doing anything. Each state a step can drift into must be one the step lands on, or one a step in its Next lands on. A step that leaves it out is a missing step: nothing written is wrong, so a review tends not to see it.
+
 Some of what a flow does shows on no screen, such as a message the product must never send. It gets an eval under `## Evals`, in the flow file:
 
 ```

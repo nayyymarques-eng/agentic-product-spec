@@ -104,6 +104,7 @@ Each break below was made on purpose, one at a time. Each line is what the check
 | Overdue was moved above Overdue, waiting for proof | `SPEC-17 (ST-09 never wins: a row above it always matches first)` |
 | Waiting for proof was written for the wrong due date | `SPEC-17 (no state for: Viewer lead, Answered no, Due date more than 7 days, Proof waiting, Extended no)` |
 | "Due soon" was written to leave out the due date itself | `SPEC-17 (E-13 sets no value of Due date; its facts must set exactly one)` |
+| After an extension, the step to the overdue request was left out of Next | `SPEC-18 (F-06 lands on ST-05; as days pass it becomes ST-09 (Due date passed), and neither F-06 nor a step in its Next lands on ST-09)` |
 | Two states match, and the evals that say which wins were deleted | `SPEC-17 (ST-09 and ST-03 both match, and no eval says which wins; e.g. Viewer lead, Answered no, Due date passed, Proof waiting, Extended no)` |
 
 The spec check also found a real gap in the design system: the spec needs disabled buttons in its three dialogs, and the design system's button has no disabled state. This does not block the build. It is reported for the design system's owner to decide:
@@ -122,7 +123,7 @@ SPEC-07 DL-03 ("Mark as answered" is disabled; the button contract has no disabl
 | `spec/personas/` | One persona sheet per role, with made-up data |
 | `src/request.ts` | The behaviour of the example screen in code: how the due date is counted, which state applies, which buttons show. Each part cites the rule IDs it applies |
 | `screens/request.tsx` | The example screen, built with [ai-ready-design-system](https://github.com/nayyymarques-eng/ai-ready-design-system). It also tells the checks how to read an eval row (`fromExample`) and how to fill the spec's {words} (`words`), so the checks work for any screen |
-| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-17 |
+| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-18 |
 | `harness/behaviour.mjs` | The behaviour check: BEH-01 to BEH-09 |
 | `harness/context.mjs` | `npm run context`: one feature's part of the spec, for an agent |
 | `.claude/agents/rules-watch.md` | The rules watch, run on a schedule |

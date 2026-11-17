@@ -16,7 +16,7 @@ From the email a person sends to the shop to the answer. One flow per job a role
 | F-03 | R-01 | Is it clear who the person is? | - | - | - | yes: F-05; no: F-04 |
 | F-04 | R-01 | Writes the doubt, asks for proof of identity, and waits | request | ST-05, ST-08 | DL-02 | F-05 when the proof arrives, F-06 to extend while waiting, or F-08 when the due date passes |
 | F-05 | R-01 | Can the answer go out by the due date? | - | - | - | yes: F-07; no, and not extended yet: F-06; no, and already extended: F-08 |
-| F-06 | R-01 | Extends the due date by two months, with a reason for the person | request | ST-04, ST-05, ST-08 | DL-01 | F-07, or F-08 when the new due date passes |
+| F-06 | R-01 | Extends the due date by two months, with a reason for the person | request | ST-04, ST-02, ST-05, ST-08 | DL-01 | F-07, or F-08 when the new due date passes |
 | F-07 | R-01 | Sends the answer, and records the date it was sent | request | ST-06, ST-10 | DL-03 | end |
 | F-08 | R-01 | The due date passes with no answer | request | ST-03, ST-09 | - | F-07 |
 
