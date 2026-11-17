@@ -1,10 +1,19 @@
 // Reads the spec folder into one object the checks and the handoff use. Nothing here judges the spec.
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const specDir = join(root, 'spec');
+
+/** The design system's folder, from "productSpec.designSystem" in package.json. Any design system with written contracts in contracts/<name>.md works for the spec check; the look check also runs its harness/score.mjs. */
+const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+export const dsPath = pkg.productSpec?.designSystem ?? 'node_modules/ai-ready-design-system';
+export const dsDir = join(root, dsPath);
+
+/** "product" in Applies to: a decision for the whole product, or a question that reaches every feature. */
+export const PRODUCT = 'product';
 
 /** Every markdown table in a text, as arrays of rows keyed by the header. */
 export function tables(text) {
@@ -129,6 +138,15 @@ const table = file => existsSync(join(specDir, file)) ? tables(readFileSync(join
 export function notBuiltYet(spec) {
   return spec.screens.flatMap(s => s.notBuilt ? [`${s.name} (whole screen)`]
     : s.states.filter(st => st.notBuilt).map(st => `${s.name} ${st.id} (${s.evals.filter(e => e.State === st.id).map(e => e.Eval).join(', ') || 'no eval'})`));
+}
+
+/** A short fingerprint of a feature: its flow file and the screen files its steps land on. A spec review report
+ * names it, so the spec check knows the review read this version of the feature and not an older one. */
+export function featureHash(flow) {
+  const files = [flow.file, ...[...new Set(flow.steps.map(x => x.screen).filter(Boolean))].sort().map(s => `spec/screens/${s}.md`)];
+  const h = createHash('sha256');
+  for (const f of files) if (existsSync(join(root, f))) h.update(readFileSync(join(root, f), 'utf8'));
+  return h.digest('hex').slice(0, 12);
 }
 
 /** The whole spec. */

@@ -74,24 +74,24 @@ When two states could apply, the first one wins.
 
 One per eval in the spec. `npm run behaviour` runs the screen's evals against the built screen.
 
-- **E-01.** Given a request received 3 Nov 2026, opened by the privacy lead on 10 Nov 2026. Then the due date is 3 Dec 2026, the screen is in ST-01 Open, and it offers Mark as answered, Extend, Ask for proof of identity.
-- **E-02.** Given a request received 3 Nov 2026, opened by the privacy lead on 28 Nov 2026. Then the due date is 3 Dec 2026, the screen is in ST-02 Due soon, and it offers Mark as answered, Extend, Ask for proof of identity.
-- **E-03.** Given a request received 3 Nov 2026, opened by the privacy lead on 4 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-03 Overdue, and it offers Mark as answered.
-- **E-04.** Given a request received 3 Nov 2026, extended on 20 Nov 2026, opened by the privacy lead on 25 Nov 2026. Then the due date is 3 Feb 2027, the screen is in ST-04 Extended, and it offers Mark as answered, Ask for proof of identity.
-- **E-05.** Given a request received 3 Nov 2026, proof asked on 12 Nov 2026, opened by the privacy lead on 20 Nov 2026. Then the due date is 3 Dec 2026, the screen is in ST-05 Waiting for proof of identity, and it offers Proof received, Mark as answered.
-- **E-06.** Given a request received 3 Nov 2026, answered on 28 Nov 2026, opened by the privacy lead on 10 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-06 Answered, and it offers no action.
-- **E-07.** Given a request received 3 Nov 2026, opened by the privacy lead on 20 Nov 2026, with the extend dialog open and no reason written. Then the due date is 3 Dec 2026, the screen is in ST-07 Extending, no reason yet, and it offers Extend, Cancel.
+- **E-01.** Given a request received 3 Nov 2026, opened by the privacy lead on 10 Nov 2026. Then the due date is 3 Dec 2026, the screen is in ST-01 Open, and it offers Mark as answered, Extend, Ask for proof of identity. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03, PRIV-06, PRIV-07, PRIV-08.
+- **E-02.** Given a request received 3 Nov 2026, opened by the privacy lead on 28 Nov 2026. Then the due date is 3 Dec 2026, the screen is in ST-02 Due soon, and it offers Mark as answered, Extend, Ask for proof of identity. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03, PRIV-07.
+- **E-03.** Given a request received 3 Nov 2026, opened by the privacy lead on 4 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-03 Overdue, and it offers Mark as answered. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03.
+- **E-04.** Given a request received 3 Nov 2026, extended on 20 Nov 2026, opened by the privacy lead on 25 Nov 2026. Then the due date is 3 Feb 2027, the screen is in ST-04 Extended, and it offers Mark as answered, Ask for proof of identity. Rests on external rules still to confirm: PRIV-02, PRIV-03.
+- **E-05.** Given a request received 3 Nov 2026, proof asked on 12 Nov 2026, opened by the privacy lead on 20 Nov 2026. Then the due date is 3 Dec 2026, the screen is in ST-05 Waiting for proof of identity, and it offers Proof received, Mark as answered. Rests on external rules still to confirm: PRIV-01, PRIV-07.
+- **E-06.** Given a request received 3 Nov 2026, answered on 28 Nov 2026, opened by the privacy lead on 10 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-06 Answered, and it offers no action. Rests on external rules still to confirm: PRIV-04.
+- **E-07.** Given a request received 3 Nov 2026, opened by the privacy lead on 20 Nov 2026, with the extend dialog open and no reason written. Then the due date is 3 Dec 2026, the screen is in ST-07 Extending, no reason yet, and it offers Extend, Cancel. Rests on external rules still to confirm: PRIV-02, PRIV-03.
 - **E-08.** Given a request received 3 Nov 2026, opened by the support agent on 20 Nov 2026. Then the due date is 3 Dec 2026, the screen is in ST-08 Support agent's view, and it offers no action.
-- **E-09.** Given a request received 31 Jan 2026, opened by the privacy lead on 10 Feb 2026. Then the due date is 28 Feb 2026, the screen is in ST-01 Open, and it offers Mark as answered, Extend, Ask for proof of identity.
-- **E-10.** Given a request received 3 Nov 2026, extended on 20 Nov 2026, opened by the privacy lead on 30 Jan 2027. Then the due date is 3 Feb 2027, the screen is in ST-02 Due soon, and it offers Mark as answered, Ask for proof of identity.
-- **E-11.** Given a request received 3 Nov 2026, extended on 20 Nov 2026, opened by the privacy lead on 5 Feb 2027. Then the due date is 3 Feb 2027, the screen is in ST-03 Overdue, and it offers Mark as answered.
-- **E-12.** Given a request received 3 Nov 2026, proof asked on 12 Nov 2026, opened by the privacy lead on 5 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-03 Overdue, and it offers Mark as answered.
-- **E-13.** Given a request received 3 Nov 2026, opened by the privacy lead on 3 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-02 Due soon, and it offers Mark as answered, Extend, Ask for proof of identity.
-- **E-14.** Given a request received 3 Nov 2026, answered on 28 Nov 2026, opened by the support agent on 10 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-06 Answered, and it offers no action.
+- **E-09.** Given a request received 31 Jan 2026, opened by the privacy lead on 10 Feb 2026. Then the due date is 28 Feb 2026, the screen is in ST-01 Open, and it offers Mark as answered, Extend, Ask for proof of identity. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03, PRIV-06, PRIV-07, PRIV-08.
+- **E-10.** Given a request received 3 Nov 2026, extended on 20 Nov 2026, opened by the privacy lead on 30 Jan 2027. Then the due date is 3 Feb 2027, the screen is in ST-02 Due soon, and it offers Mark as answered, Ask for proof of identity. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03, PRIV-07.
+- **E-11.** Given a request received 3 Nov 2026, extended on 20 Nov 2026, opened by the privacy lead on 5 Feb 2027. Then the due date is 3 Feb 2027, the screen is in ST-03 Overdue, and it offers Mark as answered. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03.
+- **E-12.** Given a request received 3 Nov 2026, proof asked on 12 Nov 2026, opened by the privacy lead on 5 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-03 Overdue, and it offers Mark as answered. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03.
+- **E-13.** Given a request received 3 Nov 2026, opened by the privacy lead on 3 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-02 Due soon, and it offers Mark as answered, Extend, Ask for proof of identity. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03, PRIV-07.
+- **E-14.** Given a request received 3 Nov 2026, answered on 28 Nov 2026, opened by the support agent on 10 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-06 Answered, and it offers no action. Rests on external rules still to confirm: PRIV-04.
 
 From the flow Answer a request, for what no screen shows. The backend's own tests run these.
 
-- **E-15.** Given the privacy lead marks a request as answered, with the date the answer was sent. Then the product sends no email or message to the person, and records the date the lead entered. (BR-04)
+- **E-15.** Given the privacy lead marks a request as answered, with the date the answer was sent. Then the product sends no email or message to the person, and records the date the lead entered. (BR-04) Rests on external rules still to confirm: PRIV-04.
 
 ## Decisions behind it
 

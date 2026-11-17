@@ -108,7 +108,7 @@ SPEC-07 ST-07 ("Extend" is disabled; the button contract has no disabled state)
 | `spec/personas/` | One persona sheet per role, with made-up data |
 | `src/request.ts` | The behaviour of the example screen in code: how the due date is counted, which state applies, which buttons show. Each part cites the rule IDs it applies |
 | `screens/request.tsx` | The example screen, built with [ai-ready-design-system](https://github.com/nayyymarques-eng/ai-ready-design-system) |
-| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-13 |
+| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-14 |
 | `harness/behaviour.mjs` | The behaviour check: BEH-01 to BEH-09 |
 | `harness/context.mjs` | `npm run context`: one feature's part of the spec, for an agent |
 | `.claude/agents/rules-watch.md` | The rules watch, run on a schedule |
@@ -140,12 +140,14 @@ The smallest start: one flow, the screen it lands on, and five evals.
 | Persona sheets | How many interviews make a trait strong | Each trait cites its source; what nobody said is a hypothesis |
 | Flows | How many, and how detailed | Every step lands on a state, and every state is reached by a step |
 | States | How many, and which one wins when two apply | Every state has at least one eval, and the evals are the tests |
-| The design system | Any design system that has written contracts, such as ai-ready-design-system | The spec names only components, variants and templates the design system has |
+| The design system | Any design system that has written contracts, such as [ai-ready-design-system](https://github.com/nayyymarques-eng/ai-ready-design-system) ([the framework](https://nayaramarques.com/design-system)). Set its folder in `package.json`, under `productSpec.designSystem` | The spec names only components, variants and templates the design system has |
 | The handoff | Its sections and where it goes | It is written from the spec, never by hand |
 
 ## Limits
 
 - The spec is only as right as the people who write and approve it. The checks find what is missing or inconsistent, not a wrong rule.
+- A rule ID in the code makes the rule findable; only the evals show the code applies it.
+- Copies kept outside the repository, such as a design file or a test plan, still drift. A decision changed in the spec reaches what works from the spec.
 - The evals are tests of the situations someone wrote down. A situation nobody wrote down is not checked. Flow evals are listed for the backend's tests; this kit does not run them.
 - The spec review is an AI model reading the spec. Three runs reduce what one run misses or invents; they do not remove it.
 - The behaviour check looks at the screen once per eval, as a still screen. It does not click through the flow, or test timing, focus or the keyboard.

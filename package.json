@@ -24,5 +24,8 @@
     "esbuild": "0.28.2",
     "playwright": "1.63.0",
     "typescript": "7.0.2"
+  },
+  "productSpec": {
+    "designSystem": "node_modules/ai-ready-design-system"
   }
 }

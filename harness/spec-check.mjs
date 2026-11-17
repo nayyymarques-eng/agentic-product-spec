@@ -2,9 +2,10 @@
 // Usage: npm run spec
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { list, readSpec, root } from './spec.mjs';
+import { readdirSync } from 'node:fs';
+import { dsDir, featureHash, list, PRODUCT, readSpec, root } from './spec.mjs';
 
-const ds = join(root, 'node_modules/ai-ready-design-system/contracts');
+const ds = join(dsDir, 'contracts');
 const spec = readSpec();
 const fails = [];
 const fail = (id, what, where) => fails.push(`${id} (${what})  ← ${where}`);
@@ -45,7 +46,7 @@ const parts = new Set([...spec.flows.map(f => f.name), ...spec.screens.map(s => 
 for (const d of spec.decisions) {
   const where = (d['Applies to'] ?? '').split(',').map(x => x.trim()).filter(Boolean);
   if (!where.length) fail('SPEC-10', `${d.ID} names no flow or screen it applies to`, 'spec/decisions.md');
-  for (const w of where) if (!parts.has(w)) fail('SPEC-10', `${d.ID} applies to "${w}", which is not a flow or a screen`, 'spec/decisions.md');
+  for (const w of where) if (w !== PRODUCT && !parts.has(w)) fail('SPEC-10', `${d.ID} applies to "${w}", which is not a flow or a screen`, 'spec/decisions.md');
 }
 for (const r of spec.roles) {
   const sheet = (r['Persona sheet'] ?? '').replace(/`/g, '').trim();
@@ -144,8 +145,8 @@ const feature = f => new Set([f.name, ...f.steps.map(x => x.screen).filter(Boole
 for (const q of spec.questions) {
   const where = list(q['Applies to']);
   if (!where.length) { fail('SPEC-12', `${q.ID} names no flow or screen it applies to`, 'spec/questions.md'); continue; }
-  for (const w of where) if (!parts.has(w)) fail('SPEC-12', `${q.ID} applies to "${w}", which is not a flow or a screen`, 'spec/questions.md');
-  if (where.every(w => parts.has(w)) && !spec.flows.some(f => where.every(w => feature(f).has(w))))
+  for (const w of where) if (w !== PRODUCT && !parts.has(w)) fail('SPEC-12', `${q.ID} applies to "${w}", which is not a flow or a screen`, 'spec/questions.md');
+  if (where.every(w => w === PRODUCT || parts.has(w)) && !spec.flows.some(f => where.every(w => feature(f).has(w))))
     fail('SPEC-12', `${q.ID} reaches beyond one feature (${where.join(', ')}); answer it, as a decision, before this merges`, 'spec/questions.md');
 }
 
@@ -161,6 +162,14 @@ for (const f of spec.flows) for (const e of f.evals) {
   for (const id of e.rules) if (!spec.rules.some(r => r.ID === id)) fail('SPEC-13', `${e.Eval} cites ${id}, which is not a rule`, f.file);
 }
 
+// SPEC-14: every feature has a spec review of its current version. A review report in reviews/ names the feature's
+// spec hash (npm run context prints it); a change to the flow or its screens changes the hash, so the review runs again.
+const reports = existsSync(join(root, 'reviews')) ? readdirSync(join(root, 'reviews')).filter(f => f.endsWith('.md')).map(f => readFileSync(join(root, 'reviews', f), 'utf8')) : [];
+for (const f of spec.flows) {
+  const hash = featureHash(f);
+  if (!reports.some(r => r.includes(`Spec hash: ${hash}`))) fail('SPEC-14', `${f.name} has no spec review of this version (spec hash ${hash}); run the review and save its report in reviews/`, f.file);
+}
+
 // An external rule still "to confirm" after its "Check again on" date is a warning, not a failure: someone reads
 // the source text, or moves the date with a reason.
 const today = new Date().toISOString().slice(0, 10);
@@ -172,4 +181,4 @@ console.log(`Spec: ${spec.flows.length} flow, ${spec.rules.length} rules, ${spec
 if (stale.length) console.log(`External rules to read again:\n${stale.join('\n')}`);
 if (triage.length) console.log(`To triage, for the design system owner:\n${[...new Set(triage)].join('\n')}`);
 if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}`); process.exit(1); }
-console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-13');
+console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-14');

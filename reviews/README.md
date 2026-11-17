@@ -9,4 +9,6 @@ The synthetic user comes from [grounded-synthetic-user](https://github.com/nayyy
 
 A model can miss a finding or invent one, and two runs of the same review differ. Run the review three times, and keep the findings at least two runs agree on; a finding only one run made is a question for a person, not a fix.
 
+Each report names the spec hash of the feature it read, in a line `Spec hash: <hash>`; `npm run context <flow>` prints it. The spec check fails until a report names the current hash, so a change to the flow or its screens needs a new review.
+
 Reports go in this folder. The rules watch, which keeps the external rules current, is in `.claude/agents/rules-watch.md` and belongs to the spec: if the synthetic user's kit brings its own copy, use this one. No review of this example has been run yet.

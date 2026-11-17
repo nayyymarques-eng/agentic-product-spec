@@ -1,5 +1,6 @@
 # Who must approve a change to each part of the spec before it merges. GitHub asks them for a review on every
-# pull request that touches their files; with branch protection on, the pull request cannot merge without them.
+# pull request that touches their files. Turn on branch protection for main, with "Require review from Code Owners",
+# so the pull request cannot merge without them.
 # Replace the example teams with your own. The last matching line wins.
 
 # Default: the product designer approves any change to the spec.

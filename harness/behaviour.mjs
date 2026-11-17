@@ -6,11 +6,11 @@ import { createRequire } from 'node:module';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { list, readSpec, root, notBuiltYet } from './spec.mjs';
+import { dsPath, list, readSpec, root, notBuiltYet } from './spec.mjs';
 import { renderExamples, out } from './render.mjs';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
-const ds = 'node_modules/ai-ready-design-system';
+const ds = dsPath;
 
 const day = d => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 const daysTo = (from, to) => Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
@@ -69,6 +69,9 @@ export async function checkBehaviour() {
     const view = join(root, 'screens', `${screen.name}.tsx`);
     const both = code + (existsSync(view) ? readFileSync(view, 'utf8') : '');
     for (const id of new Set(screen.states.flatMap(s => s.rules))) if (!new RegExp(`\\b${id}\\b`).test(both)) fail('BEH-09', 'code', `${id} is applied by a state, and named nowhere in src/${screen.name}.ts or screens/${screen.name}.tsx`);
+    // ...and the code names no rule or decision the spec no longer has: a deleted rule, or a replaced decision.
+    const live = new Set([...spec.rules.map(r => r.ID), ...spec.decisions.map(d => d.ID)]);
+    for (const id of new Set(both.match(/\b(?:BR|D)-\d{2}\b/g) ?? [])) if (!live.has(id)) fail('BEH-09', 'code', `the code names ${id}, which is not a live rule or decision in the spec`);
 
     for (const { row, file, logic } of pages) {
       checked++;

@@ -55,10 +55,10 @@ One row per decision in `decisions.md`. There is one log for the whole product, 
 | Decision | The choice, in plain words |
 | Why | The reason, and where it came from: user research, a market insight, the business strategy, a technical limit. A decision never goes against an external rule |
 | Decided by | Who made it |
-| Applies to | The flows and screens it touches, by file name |
+| Applies to | The flows and screens it touches, by file name, or `product` for the whole product |
 | Date | When it was made |
 
-A decision can hold for the whole product or for one feature: "Applies to" says which, and two features can decide differently. When a decision is no longer true, its row moves to `decisions-replaced.md`, with two more columns: the decision that replaced it and the date. The spec check then fails on anything that still cites the old one, so each place that followed it is looked at again.
+A decision can hold for the whole product (`product` in "Applies to") or for some features only, and two features can decide differently. When a decision is no longer true, its row moves to `decisions-replaced.md`, with two more columns: the decision that replaced it and the date. The spec check then fails on anything that still cites the old one, so each place that followed it is looked at again.
 
 A business rule cites the decisions it follows, by ID. When an open question is answered, the answer becomes a decision. An open question names the flows and screens it applies to: it may stay open inside one feature, but one that reaches further is answered before the change merges.
 
@@ -139,7 +139,7 @@ The evals table is the exact truth. Each row is one eval, with the facts that de
 | Gate | When | What it checks | Run |
 |---|---|---|---|
 | Spec check | Every change to the spec | What is missing or out of date: IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and every state is reached, every state and every rule covered by an eval, nothing cites a replaced decision, no open question reaches beyond one feature, every component named exists in the design system. It also lists external rules still "to confirm" past their "Check again on" date | `npm run spec` |
-| Spec review | Before each merge | A synthetic user reads a feature's flow, screens and evals as each role, against the external rules and the persona sheets, and respects the decisions. Run three times; keep what two runs agree on | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
+| Spec review | Before each merge | A synthetic user reads a feature's flow, screens and evals as each role, against the external rules and the persona sheets, and respects the decisions. Run three times; keep what two runs agree on. The report names the feature's spec hash, and the spec check fails until a report names the current one | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
 | Rules watch, optional | On a schedule, when the external rules change often, as in a regulated product | Reads the sources again, turns a changed rule back to "to confirm", and lists everything that depends on it | `.claude/agents/rules-watch.md` |
 | Behaviour check | Every pull request that touches the screen | The built screen against every state and every eval, and every rule a state applies named in the screen's code | `npm run behaviour` |
 | Design system check | Every pull request that touches the screen | How each state looks, with the design system's own harness | `npm run look` |
@@ -150,5 +150,7 @@ Two scripts check nothing, and help use the spec:
 |---|---|---|---|
 | Context | Before an agent builds, reviews or tests a feature | Prints the feature's part of the spec, following the IDs each state cites and each decision's and question's Applies to | `npm run context <flow or screen>` |
 | Handoff | Every change to the spec | Writes the handoff from the spec, for whoever builds the backend | `npm run handoff` |
+
+Run the checks on the result of the merge, not only on the branch: turn on GitHub's merge queue, or "Require branches to be up to date before merging". Two branches that each pass can still clash, such as two new decisions that both take D-07.
 
 Who must approve a change to each part, such as legal for `sources/` and product for `decisions.md`, is set in `.github/CODEOWNERS`.

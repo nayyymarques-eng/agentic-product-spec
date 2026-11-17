@@ -4,10 +4,10 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { readSpec, root, notBuiltYet } from './spec.mjs';
+import { dsDir, readSpec, notBuiltYet } from './spec.mjs';
 import { renderExamples } from './render.mjs';
 
-const ds = join(root, 'node_modules/ai-ready-design-system');
+const ds = dsDir;
 const dir = join(ds, '.states');
 const json = join(ds, '.states.json');
 rmSync(dir, { recursive: true, force: true });

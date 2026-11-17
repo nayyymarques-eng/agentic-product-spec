@@ -9,6 +9,9 @@ const spec = readSpec();
 const byId = new Map([...spec.goals, ...spec.roles, ...spec.rules, ...spec.decisions, ...spec.questions, ...spec.sources].map(r => [r.ID, r]));
 const roleName = id => byId.get(id)?.Role ?? id;
 const day = d => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+// The external rules still "to confirm" behind a list of business rules: a test built on them may change.
+const toConfirm = ids => [...new Set(ids.flatMap(id => (byId.get(id)?.Sources ?? '').split(',').map(x => x.trim())))]
+  .filter(id => /to confirm/i.test(byId.get(id)?.Mark ?? '')).sort();
 const facts = ['Received', 'Extended on', 'Proof asked on', 'Answered on'];
 
 function given(row) {
@@ -88,13 +91,14 @@ for (const s of spec.screens) {
     ...s.evals.flatMap(e => {
       const st = s.states.find(x => x.id === e.State);
       const acts = list(e.Actions);
-      return [`- **${e.Eval}.** Given ${given(e)}. Then the due date is ${day(e.Due)}, the screen is in ${e.State} ${st?.name ?? ''}, and it offers ${acts.length ? acts.join(', ') : 'no action'}.`];
+      const unsure = toConfirm(st?.rules ?? []);
+      return [`- **${e.Eval}.** Given ${given(e)}. Then the due date is ${day(e.Due)}, the screen is in ${e.State} ${st?.name ?? ''}, and it offers ${acts.length ? acts.join(', ') : 'no action'}.${unsure.length ? ` Rests on external rules still to confirm: ${unsure.join(', ')}.` : ''}`];
     }),
     ...spec.flows.filter(f => f.steps.some(x => x.screen === s.name) && f.evals.length).flatMap(f => [
       '',
       `From the flow ${f.title}, for what no screen shows. The backend's own tests run these.`,
       '',
-      ...f.evals.map(e => `- **${e.Eval}.** Given ${e.Given.charAt(0).toLowerCase()}${e.Given.slice(1)}. Then ${e.Then.charAt(0).toLowerCase()}${e.Then.slice(1)}. (${e.rules.join(', ')})`),
+      ...f.evals.map(e => { const unsure = toConfirm(e.rules); return `- **${e.Eval}.** Given ${e.Given.charAt(0).toLowerCase()}${e.Given.slice(1)}. Then ${e.Then.charAt(0).toLowerCase()}${e.Then.slice(1)}. (${e.rules.join(', ')})${unsure.length ? ` Rests on external rules still to confirm: ${unsure.join(', ')}.` : ''}`; }),
     ]),
     '',
     '## Decisions behind it',

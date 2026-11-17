@@ -4,7 +4,7 @@
 // Usage: npm run context <flow or screen>, such as: npm run context answer-a-request
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { list, readSpec, root } from './spec.mjs';
+import { featureHash, list, readSpec, root } from './spec.mjs';
 
 const spec = readSpec();
 const want = process.argv[2];
@@ -24,7 +24,7 @@ const here = new Set([...flows.map(f => f.name), ...screens.map(s => s.name)]);
 const ids = new Set([
   ...flows.flatMap(f => [...f.roles, ...f.goals]),
   ...screens.flatMap(s => [...s.roles, ...s.goals, ...s.states.flatMap(st => [...st.rules, ...st.goals])]),
-  ...[...spec.decisions, ...spec.questions].filter(d => list(d['Applies to']).some(w => here.has(w))).map(d => d.ID),
+  ...[...spec.decisions, ...spec.questions].filter(d => list(d['Applies to']).some(w => here.has(w) || w === 'product')).map(d => d.ID),
   ...spec.rules.filter(r => list(r.Where).some(w => here.has(w))).map(r => r.ID),
 ]);
 const all = [...spec.goals, ...spec.roles, ...spec.rules, ...spec.decisions, ...spec.questions, ...spec.sources];
@@ -57,5 +57,6 @@ const out = [
   rows('Roles', 'spec/roles.md', spec.roles),
   ...personas.map(p => read(join('spec', p))),
   read('spec/glossary.md'),
+  ...flows.map(f => `Spec hash of ${f.name}, for a spec review report: ${featureHash(f)}`),
 ].filter(Boolean);
 console.log(out.join('\n\n'));
