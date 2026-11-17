@@ -144,7 +144,7 @@ The smallest start: one flow, the screen it lands on, and five evals.
 |---|---|---|
 | The spec's files | Which files it keeps, and their names | Every rule, goal, decision, step and state has an ID, and everything that uses it cites the ID |
 | Sources | Laws, regulator guidance, contracts, policies | A rule with no source is a question, not a rule |
-| Decisions | Who may decide, and how much of the why to write | One log for the product; each decision says why, who, when and what it applies to |
+| Decisions | Who may decide, and how much of the why to write | A decision about the whole product goes in the product decision log; every decision made for a feature goes in that feature's decision log. Each says why, who, when and what it applies to |
 | Persona sheets | How many interviews make a trait strong | Each trait cites its source; what nobody said is a hypothesis |
 | Flows | How many, and how detailed | Every step lands on a state, and every state is reached by a step |
 | States | How many, and which one wins when two apply | Every state has at least one eval, and the evals are the tests |
@@ -160,7 +160,8 @@ The smallest start: one flow, the screen it lands on, and five evals.
 - The spec review is an AI model reading the spec. Three runs reduce what one run misses or invents; they do not remove it.
 - The behaviour check looks at the screen once per eval, as a still screen. It does not click through the flow, or test timing, focus or the keyboard.
 - It does not test usability or say what to build.
-- It was built on one flow and one screen of a made-up product. It has not been tried on a large product or by a team.
+- It was built on one flow and one screen of a made-up product, by one person working alone. It has not been tried on a large product or by a team: who may change which part of the spec, who approves each change, and how two people working on the same decision agree are still open.
+- It works the same for a new product and an existing one: it needs the decisions, rules and behaviour written down either way. How to recover them from an existing product is not covered.
 - The external rules in `spec/sources/` are marked "to confirm": nobody has read the GDPR text for this example. The persona sheets are made up.
 
 ## License

@@ -17,7 +17,7 @@ Everything in this folder is an example for a made-up product: an inbox where a 
 | `personas/` | One persona sheet per role, from interviews: each trait with its source and how many interviews say it | none |
 | `goals.md` | What each role comes to the product to get done | G-01 |
 | `sources/` | The external rules: laws, regulator guidance, contracts, platform policies and standards, each with its source text. Written once, here. The synthetic user and the rules watch read them here | PRIV-01 |
-| `decisions.md` | The product decisions that reach beyond one feature: choices the team made on purpose, with why, who decided, when, and the flows and screens they apply to (`product` for all) | D-01 |
+| `decisions.md` | The product decision log: decisions about the whole product, made for no single feature, with why, who decided, when, and what they apply to (`product` for all). Every decision made for a feature lives in that feature's flow file instead | D-01 |
 | `decisions-replaced.md` | Decisions that are no longer true, each with the decision that replaced it. Nothing may cite them | D-01 |
 | `rules.md` | The business rules: what the product does, each citing the external rules, decisions, goals or roles it comes from | BR-01 |
 | `questions.md` | What nobody has answered yet, who will, what the product does meanwhile, and the flows and screens it applies to | Q-01 |
@@ -89,11 +89,20 @@ A flow file and a screen file end with `## Not covered`: what the feature leaves
 Each review can find something new, because each change gives it more to read. So a feature does not wait for a review that finds nothing. It merges when:
 
 1. the spec check passes;
-2. a review of the current version is in, run three times;
+2. a review of the current version is in: run three times, or once for a change that only rewords (see "How much review a change needs");
 3. no finding two runs agree on goes against an external rule or a decision;
 4. every other finding two runs agree on is fixed, written as an open question for an expert, listed under `## Not covered`, or written in the report as a follow-up for a later change.
 
 A fix changes the feature, and so its spec hash: the review runs again on the fixed version. That run is the last one when none of its agreed findings goes against a rule or a decision: its other findings become follow-ups in its report, and the feature merges. A finding only one run made is a question for a person, not a fix.
+
+## How much review a change needs
+
+Every change to a flow or its screens changes the feature's spec hash, so every change needs a review of its new version. How much review depends on what the change does.
+
+- **A change to what the feature does** needs the full review, run three times: a new or changed step, state, dialog, button, citation or eval, or a new decision.
+- **A change that only rewords** needs a light review, run once: the words a screen shows, a step's description, an explanation, a typo. A model reading the new words once is enough to catch a word that now says something else, such as a banner that promises what a rule does not allow.
+
+`npm run context <flow>` prints two hashes. The spec hash changes with any edit. The structure hash changes only when what the feature does changes: its steps, states, dialogs, buttons, citations, decisions and evals. A light review's report starts with three lines: `Review: light`, the spec hash, and the structure hash. The spec check accepts it only when that structure hash is the current one and a full review report names it too. So a change that does more than reword cannot pass on a light review.
 
 ## How a flow is written
 

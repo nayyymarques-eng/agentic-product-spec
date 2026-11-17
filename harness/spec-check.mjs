@@ -3,7 +3,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { readdirSync } from 'node:fs';
-import { dialogShown, dsDir, featureHash, list, PRODUCT, readSpec, root } from './spec.mjs';
+import { dialogShown, dsDir, featureHash, list, structureHash, PRODUCT, readSpec, root } from './spec.mjs';
 
 const ds = join(dsDir, 'contracts');
 const spec = readSpec();
@@ -186,10 +186,16 @@ for (const f of spec.flows) for (const e of f.evals) {
 
 // SPEC-14: every feature has a spec review of its current version. A review report in reviews/ names the feature's
 // spec hash (npm run context prints it); a change to the flow or its screens changes the hash, so the review runs again.
+// A light review, one run for a change that only rewords, counts only when the structure hash it names is the one of
+// the current version and of a full review: so a light review can never stand in for a change to what the feature does.
 const reports = existsSync(join(root, 'reviews')) ? readdirSync(join(root, 'reviews')).filter(f => f.endsWith('.md')).map(f => readFileSync(join(root, 'reviews', f), 'utf8')) : [];
+const light = r => /^Review: light\b/m.test(r);
 for (const f of spec.flows) {
-  const hash = featureHash(f);
-  if (!reports.some(r => r.includes(`Spec hash: ${hash}`))) fail('SPEC-14', `${f.name} has no spec review of this version (spec hash ${hash}); run the review and save its report in reviews/`, f.file);
+  const hash = featureHash(f), shape = structureHash(spec, f);
+  const named = reports.filter(r => r.includes(`Spec hash: ${hash}`));
+  if (!named.length) fail('SPEC-14', `${f.name} has no spec review of this version (spec hash ${hash}); run the review and save its report in reviews/`, f.file);
+  else if (named.every(light) && !(named.some(r => r.includes(`Structure hash: ${shape}`)) && reports.some(r => !light(r) && r.includes(`Structure hash: ${shape}`))))
+    fail('SPEC-14', `${f.name} has only a light review of this version, but this change does more than reword (structure hash ${shape} has no full review); run the full review, three times`, f.file);
 }
 
 // An external rule still "to confirm" after its "Check again on" date is a warning, not a failure: someone reads

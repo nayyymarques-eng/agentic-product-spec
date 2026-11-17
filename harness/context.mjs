@@ -4,7 +4,7 @@
 // Usage: npm run context <flow or screen>, such as: npm run context answer-a-request
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { featureHash, list, readSpec, root } from './spec.mjs';
+import { featureHash, list, structureHash, readSpec, root } from './spec.mjs';
 
 const spec = readSpec();
 const want = process.argv[2];
@@ -57,6 +57,6 @@ const out = [
   rows('Roles', 'spec/roles.md', spec.roles),
   ...personas.map(p => read(join('spec', p))),
   read('spec/glossary.md'),
-  ...flows.map(f => `Spec hash of ${f.name}, for a spec review report: ${featureHash(f)}`),
+  ...flows.map(f => `For a spec review report of ${f.name}:\n\nSpec hash: ${featureHash(f)}\nStructure hash: ${structureHash(spec, f)}`),
 ].filter(Boolean);
 console.log(out.join('\n\n'));
