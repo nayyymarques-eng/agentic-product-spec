@@ -103,7 +103,9 @@ export async function checkBehaviour() {
         if (a && (a.variant !== b.variant || off !== b.disabled)) fail('BEH-05', ex, `"${b.label}" is ${b.variant}${b.disabled ? ', disabled' : ''}, the spec says ${a.variant}${off ? ', disabled' : ''}`);
       }
       // BEH-06: the words that must show, and the ones that never may.
-      for (const s of [...screen.always, ...want.says, ...(dlg?.asks ?? [])]) if (!got.body.includes(fill(s, words))) fail('BEH-06', ex, `"${fill(s, words)}" is missing`);
+      // A line shown in every state gives way to what a state never shows.
+      const always = screen.always.filter(s => !want.never.some(n => s.toLowerCase().includes(n.toLowerCase())));
+      for (const s of [...always, ...want.says, ...(dlg?.asks ?? [])]) if (!got.body.includes(fill(s, words))) fail('BEH-06', ex, `"${fill(s, words)}" is missing`);
       for (const n of [...screen.never, ...want.never]) if (got.body.toLowerCase().includes(n.toLowerCase())) fail('BEH-06', ex, `shows "${n}"`);
       // What happened: each line shows once every word in it has a value, unless the state never shows it.
       for (const s of screen.happened) {

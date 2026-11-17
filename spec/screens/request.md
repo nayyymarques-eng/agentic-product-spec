@@ -6,12 +6,12 @@ One request, opened from the privacy lead's list: the person's message, its due 
 - Roles: R-01, R-02
 - Goals: G-01, G-02, G-03, G-04
 - Never shows: €, fee, price
-- Shows in every state: "Reached the shop on {received}", "Sent to the privacy lead on {sent}"
-- Shows when it happened: "Extended on {extended}", "Proof of identity asked for on {asked}", "Proof of identity received on {arrived}"
+- Shows in every state: "Reached the shop on {received}", "Sent to the privacy lead on {sent}", "Due date: {due}"
+- Shows when it happened: "Extended on {extended}. Reason: {reason}", "Proof of identity asked for on {asked}. Doubt: {doubt}", "Proof of identity received on {arrived}"
 
 ## Words
 
-The words in braces come from the eval row. A line under "Shows when it happened" shows once every word in it has a value, in every state that does not say it never shows what happened. A date shows as "3 Dec", with the year when it is not Today's year: "3 Feb 2027".
+The words in braces come from the eval row. A line under "Shows when it happened" shows once every word in it has a value, in every state that does not say it never shows what happened. What a state never shows also wins over a line shown in every state. A date shows as "3 Dec", with the year when it is not Today's year: "3 Feb 2027".
 
 | Word | What it is |
 |---|---|
@@ -25,6 +25,8 @@ The words in braces come from the eval row. A line under "Shows when it happened
 | {answered} | The Answered on column |
 | {extended} | The Extended on column |
 | {arrived} | The Proof received on column |
+| {reason} | The reason the lead wrote in Extend. The evals use one sample reason |
+| {doubt} | The doubt the lead wrote in Ask for proof of identity. The evals use one sample doubt |
 
 ## States
 
@@ -35,7 +37,7 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Status: badge none "With the privacy lead"
 - Banner: none
 - Actions: none
-- Never shows: what happened, "Due date", "Reason for"
+- Never shows: what happened, "Due date"
 - Rules: BR-08
 - Goals: G-04
 
@@ -123,7 +125,7 @@ A dialog opens over a state, from one of its buttons, and leaves that state as i
 - Title: "Extend the due date by two months"
 - Asks: "Reason, for the letter to the person"
 - Actions: Extend (primary, disabled until written), Cancel (tertiary)
-- Closes when: the due date passes, or the request is extended in another tab. Nothing is extended.
+- Closes when: the due date passes, or the request is extended or answered in another tab. Nothing is extended.
 - Rules: BR-02
 - Goals: G-01
 
@@ -133,7 +135,7 @@ A dialog opens over a state, from one of its buttons, and leaves that state as i
 - Title: "Ask for proof of identity"
 - Asks: "Your doubt about who wrote"
 - Actions: Ask (primary, disabled until written), Cancel (tertiary)
-- Closes when: the due date passes, or proof is asked for in another tab. Nothing is asked.
+- Closes when: the due date passes, or proof is asked for or the request answered in another tab. Nothing is asked.
 - Rules: BR-05
 - Goals: G-01
 
@@ -149,7 +151,7 @@ A dialog opens over a state, from one of its buttons, and leaves that state as i
 
 ## Evals
 
-Each row is one eval and one test. Viewer, Received, Sent on, Extended on, Proof asked on, Proof received on, Answered on, Dialog (the one the lead opened), Written (whether the lead has written in it) and Today are the facts. Due, State and Actions are what the screen must show: the buttons of the dialog when it shows, else those of the state. A dash means none.
+Each row is one eval and one test. Viewer, Received, Sent on, Extended on, Proof asked on, Proof received on, Answered on, Dialog (the one the lead opened), Written (whether the lead has written in it: more than spaces) and Today are the facts. A main button marked "disabled until written" shows disabled when Written is a dash, and the checks test it. Due, State and Actions are what the screen must show: the buttons of the dialog when it shows, else those of the state. A dash means none.
 
 | Eval | Viewer | Received | Sent on | Extended on | Proof asked on | Proof received on | Answered on | Dialog | Written | Today | Due | State | Actions |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -194,20 +196,31 @@ Each row is one eval and one test. Viewer, Received, Sent on, Extended on, Proof
 | E-44 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | DL-01 | - | 2026-12-05 | 2026-12-03 | ST-09 | Proof received, Mark as answered |
 | E-45 | R-02 | 2026-11-03 | 2026-11-03 | 2026-11-20 | 2026-11-25 | - | - | - | - | 2026-12-01 | 2027-02-03 | ST-07 | - |
 | E-46 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | 2026-11-15 | - | DL-02 | yes | 2026-11-20 | 2026-12-03 | ST-01 | Mark as answered, Extend |
+| E-47 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | 2026-11-20 | DL-01 | yes | 2026-11-20 | 2026-12-03 | ST-06 | - |
+| E-48 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | 2026-11-20 | DL-02 | yes | 2026-11-20 | 2026-12-03 | ST-06 | - |
+| E-49 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | 2026-12-05 | - | - | 2026-12-10 | 2026-12-03 | ST-10 | - |
+| E-50 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | 2026-11-15 | - | - | - | 2026-11-28 | 2026-12-03 | ST-02 | Mark as answered, Extend |
+| E-51 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | 2026-11-12 | 2026-11-15 | - | - | - | 2026-11-25 | 2027-02-03 | ST-04 | Mark as answered |
+| E-52 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | - | - | - | DL-02 | - | 2026-11-25 | 2027-02-03 | ST-04 | Ask, Cancel |
+| E-53 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | DL-02 | yes | 2026-11-28 | 2026-12-03 | ST-02 | Ask, Cancel |
+| E-54 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | DL-03 | - | 2026-11-20 | 2026-12-03 | ST-05 | Mark as answered, Cancel |
+| E-55 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | DL-03 | yes | 2026-11-28 | 2026-12-03 | ST-08 | Mark as answered, Cancel |
+| E-56 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | - | - | - | DL-03 | - | 2026-11-25 | 2027-02-03 | ST-04 | Mark as answered, Cancel |
 
 Where two states are true at once:
 
-- E-12: waiting for proof, and overdue. Overdue wins, and the screen still says proof was asked for and can record that it arrived.
+- E-12: waiting for proof, and overdue. Overdue wins, and the screen still says proof was asked for and can record that it arrived. Proof received leads, and Mark as answered stays the least prominent until Q-05 is answered.
 - E-16: waiting for proof, and due soon. The countdown shows and Extend stays (D-07).
 - E-17: extended, then waiting for proof. Extend is gone: a request is extended once.
 - E-41 and E-42: extended, waiting for proof, and due soon or overdue. The countdown or the overdue count shows, and Extend stays gone.
 - E-18: proof asked for, then received. Ask for proof of identity is gone: proof is asked for once (D-10), and the history keeps both dates.
-- E-43: answered while proof was still awaited (Q-05). Answered wins, and the history keeps the day proof was asked for.
+- E-43 and E-49: answered while proof was still awaited (Q-05). Answered wins, on time or late, and the history keeps the day proof was asked for.
+- E-50 and E-51: proof received, then due soon or extended. Ask for proof of identity stays gone (D-10).
 - E-22: answered after the due date. The screen says how late (D-08).
 - E-14, E-23 and E-45: a support agent on an answered, an overdue, or an extended request waiting for proof. The agent sees who has it, and nothing else about it: no due date, no reasons, no history (BR-08).
 - E-37: proof that arrives after the due date. The request stays overdue.
 
-Dialogs over a state: E-07, E-20, E-21, E-24, E-25 and E-26 show a dialog over the state, which keeps its status and banner. E-19, E-36 and E-44 show Extend and Ask for proof closing when the due date passes. E-40 and E-46 show them closing when the request was extended, or proof asked for, in another tab: the state no longer offers the button. E-39 shows Mark as answered closing when someone else has answered the request in the meantime. E-35 and E-38 show the main button once something is written.
+Dialogs over a state: E-07, E-20, E-21, E-24, E-25 and E-26 show a dialog over the state, which keeps its status and banner. E-19, E-36 and E-44 show Extend and Ask for proof closing when the due date passes. E-40 and E-46 show them closing when the request was extended, or proof asked for, in another tab: the state no longer offers the button. E-47 and E-48 show them closing when the request was answered in another tab. E-52 shows Ask for proof staying open over a request extended in the meantime: ST-04 still offers it. E-53 to E-56 show each dialog over the other states it lists. E-39 shows Mark as answered closing when someone else has answered the request in the meantime. E-35 and E-38 show the main button once something is written.
 
 Dates at the edges: E-09 is the month-end eval (Q-02); E-29 extends it (Q-03); E-30 is a leap year. E-13 is the due date itself: still due, not yet overdue. E-27 and E-28 are 7 and 8 days before the due date: the first is due soon, the second is not. E-18 shows the screen once the proof has arrived. E-08 is sent on a later day than it was received: the due date still counts from the day it reached the shop (BR-01).
 

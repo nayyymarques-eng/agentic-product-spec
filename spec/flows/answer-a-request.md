@@ -27,7 +27,7 @@ What the flow must do that no screen shows. Each row is one eval: the facts, and
 | Eval | Given | Then | Rules |
 |---|---|---|---|
 | E-15 | The privacy lead marks a request as answered, with the date the answer was sent | The product sends no email or message to the person, and records the date the lead entered | BR-04 |
-| E-31 | The privacy lead enters an answer date after today, or before the request reached the shop | The request is not marked as answered, and the field says which date is allowed | BR-04 |
+| E-31 | The privacy lead enters an answer date after today, before the request reached the shop, or before its extension or a proof of identity asked for or received | The request is not marked as answered, and the field says which date is allowed | BR-04 |
 | E-32 | The privacy lead extends a request with a reason | The product sends nothing to the person, and records the reason and the day of the extension | BR-02 |
 | E-33 | The privacy lead asks for proof of identity with a doubt written | The product sends nothing to the person, and records the doubt and the day it was asked | BR-05 |
 | E-34 | The support agent sends a request on some days after it reached the shop | The due date counts from the day it reached the shop, and the day it was sent is recorded apart | BR-01, BR-08 |

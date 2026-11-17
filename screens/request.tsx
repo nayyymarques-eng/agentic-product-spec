@@ -13,7 +13,7 @@ export function words({ request: r, view: v }: { request: Request; view: View })
   const d = (day?: string) => (day ? short(day, v.today) : '');
   return {
     due: d(due), received: d(r.received), sent: d(r.sentOn), asked: d(r.proofAskedOn), answered: d(r.answeredOn),
-    extended: d(r.extendedOn), arrived: d(r.proofReceivedOn),
+    extended: d(r.extendedOn), arrived: d(r.proofReceivedOn), reason: r.extendReason ?? '', doubt: r.proofDoubt ?? '',
     in: left === 0 ? 'today' : left === 1 ? 'tomorrow' : `in ${left} days`,
     overdue: days(-left),
     late: r.answeredOn ? days(daysBetween(due, r.answeredOn)) : '',
@@ -62,8 +62,8 @@ export function RequestScreen({ request: r, view: v }: { request: Request; view:
   // What happened, once it has. The support agent sees none of it, nor the lead's notes (BR-08).
   const lead = v.viewer === 'R-01';
   const history = lead ? [
-    r.extendedOn ? `Extended on ${w.extended}` : null,
-    r.proofAskedOn ? `Proof of identity asked for on ${w.asked}` : null,
+    r.extendedOn ? `Extended on ${w.extended}. Reason: ${w.reason}` : null,
+    r.proofAskedOn ? `Proof of identity asked for on ${w.asked}. Doubt: ${w.doubt}` : null,
     r.proofReceivedOn ? `Proof of identity received on ${w.arrived}` : null,
   ].filter((h): h is string => h !== null) : [];
 
@@ -78,7 +78,7 @@ export function RequestScreen({ request: r, view: v }: { request: Request; view:
           <Stack>
             {banner ?? null}
             {says ? <p>{says}</p> : null}
-            <p>Reached the shop on {w.received}. Sent to the privacy lead on {w.sent}.</p>
+            <p>Reached the shop on {w.received}. Sent to the privacy lead on {w.sent}.{lead ? ` Due date: ${w.due}.` : ''}</p>
             <Section title="The person's message" titleId="message">
               <Card><p>Hello, I would like a copy of the personal data your shop holds about me, and to know who you shared it with. My last order was in September. Thank you, Alex Romero</p></Card>
             </Section>
@@ -91,9 +91,6 @@ export function RequestScreen({ request: r, view: v }: { request: Request; view:
                 <ListItem label="Kind" value="See their data" />
                 <ListItem label="From" value="alex@example.com" />
                 <ListItem label="Order" value="#10482" />
-                {lead ? <ListItem label="Due date" value={w.due} /> : null}
-                {lead && r.extendReason ? <ListItem label="Reason for the extension" value={r.extendReason} /> : null}
-                {lead && r.proofDoubt ? <ListItem label="Reason for asking for proof" value={r.proofDoubt} /> : null}
               </List>
             </Section>
             {history.length ? (

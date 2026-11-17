@@ -9,7 +9,7 @@ What each thing in the product is today, in one line. When a screen file and thi
 | Sent on | The day the support agent sent the request to the privacy lead | BR-08 | |
 | Today | The current day in the shop's time zone. A request turns overdue the day after its due date | BR-03 | |
 | Due date | One month after the request reached the shop; three months once extended | BR-01, BR-02 | D-04 |
-| Due soon | The 7 days before the due date | BR-07 | D-06 |
+| Due soon | From 7 days before the due date to the due date itself | BR-07 | D-06 |
 | Overdue | Past the due date and not answered | BR-03 | D-02 |
 | Answered late | Answered with a date after the due date | BR-03 | D-08 |
 | Extension | Two more months, once, with a written reason | BR-02 | D-09 |

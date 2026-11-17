@@ -8,8 +8,8 @@ Written by `npm run handoff` from `spec/screens/request.md` and the files it cit
 - Used by: Privacy lead (R-01), Support agent (R-02)
 - Goals: Answer every request within the legal time (G-01); See first what needs action (G-02); Show later what was done, by whom and when (G-03); Hand a request on, and know it reached the privacy lead (G-04)
 - Never shows: €, fee, price
-- Shows in every state: "Reached the shop on {received}", "Sent to the privacy lead on {sent}"
-- Shows when it happened: "Extended on {extended}", "Proof of identity asked for on {asked}", "Proof of identity received on {arrived}"
+- Shows in every state: "Reached the shop on {received}", "Sent to the privacy lead on {sent}", "Due date: {due}"
+- Shows when it happened: "Extended on {extended}. Reason: {reason}", "Proof of identity asked for on {asked}. Doubt: {doubt}", "Proof of identity received on {arrived}"
 
 ## Flow: Answer a request
 
@@ -52,7 +52,7 @@ Each rule is a requirement. Its sources say why, so a change upstream finds this
 | BR-01 | The due date is one month after the day the request reached the shop, not the day the support agent sent it on or the day the privacy lead opened it. | PRIV-01, Q-02, Q-03 |
 | BR-02 | The privacy lead can extend the due date once, before it passes, by two more months, and only after writing the reason that goes into the letter to the person. | PRIV-02, PRIV-03, D-04, D-07, D-09, Q-04 |
 | BR-03 | A request past its due date and not answered is overdue, and says so until someone closes it. An answer after the due date says how late it was. | PRIV-01, D-02, D-08 |
-| BR-04 | The privacy lead marks a request as answered with the date the answer was sent: not after today, and not before the request reached the shop. The product sends nothing to the person. | PRIV-04, D-01, D-09, Q-05 |
+| BR-04 | The privacy lead marks a request as answered with the date the answer was sent: not after today, and not before the request reached the shop or before anything recorded on it since. The product sends nothing to the person. | PRIV-04, D-01, D-09, Q-05 |
 | BR-05 | The privacy lead asks for proof of identity once, before the due date, and only with a reasonable doubt, written down. The due date does not move while the lead waits. | PRIV-07, D-05, D-09, D-10, Q-01, Q-07, Q-08 |
 | BR-06 | Answering is free, and the product never charges for a copy. No screen shows a fee or a price. | PRIV-06, PRIV-08 |
 | BR-07 | A request is due soon from 7 days before its due date. | D-06, G-02 |
@@ -64,7 +64,7 @@ When two states could apply, the first one wins.
 
 | ID | State | When | Status | Actions | Never shows |
 |---|---|---|---|---|---|
-| ST-07 | Support agent's view | a support agent opens a request, whatever its state | none: "With the privacy lead" | none | what happened, "Due date", "Reason for" |
+| ST-07 | Support agent's view | a support agent opens a request, whatever its state | none: "With the privacy lead" | none | what happened, "Due date" |
 | ST-10 | Answered late | the privacy lead marked the request as answered, with a date after the due date | warning: "Answered {late} late" | none | - |
 | ST-06 | Answered | the privacy lead marked the request as answered, with a date on or before the due date | positive: "Answered on {answered}" | none | - |
 | ST-09 | Overdue, waiting for proof of identity | not answered, today is after the due date, and the proof of identity asked for has not arrived | critical: "Overdue by {overdue}" | Proof received (primary), Mark as answered (tertiary) | - |
@@ -81,8 +81,8 @@ A dialog opens over a state, which keeps its status and banner. It shows only ov
 
 | ID | Dialog | Opens from | Over | Asks | Actions | Closes when |
 |---|---|---|---|---|---|---|
-| DL-01 | Extend the due date by two months | Extend | ST-01, ST-02, ST-05, ST-08 | Reason, for the letter to the person | Extend (primary, disabled until written), Cancel (tertiary) | the due date passes, or the request is extended in another tab. Nothing is extended. |
-| DL-02 | Ask for proof of identity | Ask for proof of identity | ST-01, ST-02, ST-04 | Your doubt about who wrote | Ask (primary, disabled until written), Cancel (tertiary) | the due date passes, or proof is asked for in another tab. Nothing is asked. |
+| DL-01 | Extend the due date by two months | Extend | ST-01, ST-02, ST-05, ST-08 | Reason, for the letter to the person | Extend (primary, disabled until written), Cancel (tertiary) | the due date passes, or the request is extended or answered in another tab. Nothing is extended. |
+| DL-02 | Ask for proof of identity | Ask for proof of identity | ST-01, ST-02, ST-04 | Your doubt about who wrote | Ask (primary, disabled until written), Cancel (tertiary) | the due date passes, or proof is asked for or the request answered in another tab. Nothing is asked. |
 | DL-03 | Mark as answered | Mark as answered | ST-01, ST-02, ST-03, ST-04, ST-05, ST-08, ST-09 | Date the answer was sent | Mark as answered (primary, disabled until written), Cancel (tertiary) | the request is answered in the meantime, by someone else or in another tab. While it is not answered, answering is always possible. |
 
 ## Acceptance tests
@@ -130,11 +130,21 @@ One per eval in the spec. `npm run behaviour` runs the screen's evals against th
 - **E-44.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, proof asked on 12 Nov 2026, opened by the privacy lead on 5 Dec 2026, with the DL-01 Extend dialog opened and nothing written in it yet. Then the due date is 3 Dec 2026, the screen is in ST-09 Overdue, waiting for proof of identity, the DL-01 dialog has closed, and it offers Proof received, Mark as answered. Rests on external rules still to confirm: PRIV-01, PRIV-07.
 - **E-45.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, extended on 20 Nov 2026, proof asked on 25 Nov 2026, opened by the support agent on 1 Dec 2026. Then the due date is 3 Feb 2027, the screen is in ST-07 Support agent's view, and it offers no action.
 - **E-46.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, proof asked on 12 Nov 2026, proof received on 15 Nov 2026, opened by the privacy lead on 20 Nov 2026, with the DL-02 Ask for proof of identity dialog opened and something written in it. Then the due date is 3 Dec 2026, the screen is in ST-01 Open, the DL-02 dialog has closed, and it offers Mark as answered, Extend. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03, PRIV-06, PRIV-07, PRIV-08.
+- **E-47.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, answered on 20 Nov 2026, opened by the privacy lead on 20 Nov 2026, with the DL-01 Extend dialog opened and something written in it. Then the due date is 3 Dec 2026, the screen is in ST-06 Answered, the DL-01 dialog has closed, and it offers no action. Rests on external rules still to confirm: PRIV-04.
+- **E-48.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, answered on 20 Nov 2026, opened by the privacy lead on 20 Nov 2026, with the DL-02 Ask for proof of identity dialog opened and something written in it. Then the due date is 3 Dec 2026, the screen is in ST-06 Answered, the DL-02 dialog has closed, and it offers no action. Rests on external rules still to confirm: PRIV-04.
+- **E-49.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, proof asked on 12 Nov 2026, answered on 5 Dec 2026, opened by the privacy lead on 10 Dec 2026. Then the due date is 3 Dec 2026, the screen is in ST-10 Answered late, and it offers no action. Rests on external rules still to confirm: PRIV-01, PRIV-04.
+- **E-50.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, proof asked on 12 Nov 2026, proof received on 15 Nov 2026, opened by the privacy lead on 28 Nov 2026. Then the due date is 3 Dec 2026, the screen is in ST-02 Due soon, and it offers Mark as answered, Extend. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03, PRIV-07.
+- **E-51.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, extended on 20 Nov 2026, proof asked on 12 Nov 2026, proof received on 15 Nov 2026, opened by the privacy lead on 25 Nov 2026. Then the due date is 3 Feb 2027, the screen is in ST-04 Extended, and it offers Mark as answered. Rests on external rules still to confirm: PRIV-02, PRIV-03, PRIV-07.
+- **E-52.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, extended on 20 Nov 2026, opened by the privacy lead on 25 Nov 2026, with the DL-02 Ask for proof of identity dialog opened and nothing written in it yet. Then the due date is 3 Feb 2027, the screen is in ST-04 Extended, the DL-02 dialog shows over it, and it offers Ask, Cancel. Rests on external rules still to confirm: PRIV-02, PRIV-03, PRIV-07.
+- **E-53.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, opened by the privacy lead on 28 Nov 2026, with the DL-02 Ask for proof of identity dialog opened and something written in it. Then the due date is 3 Dec 2026, the screen is in ST-02 Due soon, the DL-02 dialog shows over it, and it offers Ask, Cancel. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03, PRIV-07.
+- **E-54.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, proof asked on 12 Nov 2026, opened by the privacy lead on 20 Nov 2026, with the DL-03 Mark as answered dialog opened and nothing written in it yet. Then the due date is 3 Dec 2026, the screen is in ST-05 Waiting for proof of identity, the DL-03 dialog shows over it, and it offers Mark as answered, Cancel. Rests on external rules still to confirm: PRIV-01, PRIV-02, PRIV-03, PRIV-07.
+- **E-55.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, proof asked on 12 Nov 2026, opened by the privacy lead on 28 Nov 2026, with the DL-03 Mark as answered dialog opened and something written in it. Then the due date is 3 Dec 2026, the screen is in ST-08 Waiting for proof of identity, due soon, the DL-03 dialog shows over it, and it offers Mark as answered, Cancel. Rests on external rules still to confirm: PRIV-02, PRIV-03, PRIV-07.
+- **E-56.** Given a request received 3 Nov 2026, sent on 3 Nov 2026, extended on 20 Nov 2026, opened by the privacy lead on 25 Nov 2026, with the DL-03 Mark as answered dialog opened and nothing written in it yet. Then the due date is 3 Feb 2027, the screen is in ST-04 Extended, the DL-03 dialog shows over it, and it offers Mark as answered, Cancel. Rests on external rules still to confirm: PRIV-02, PRIV-03, PRIV-07.
 
 From the flow Answer a request, for what no screen shows. The backend's own tests run these.
 
 - **E-15.** Given the privacy lead marks a request as answered, with the date the answer was sent. Then the product sends no email or message to the person, and records the date the lead entered. (BR-04) Rests on external rules still to confirm: PRIV-04.
-- **E-31.** Given the privacy lead enters an answer date after today, or before the request reached the shop. Then the request is not marked as answered, and the field says which date is allowed. (BR-04) Rests on external rules still to confirm: PRIV-04.
+- **E-31.** Given the privacy lead enters an answer date after today, before the request reached the shop, or before its extension or a proof of identity asked for or received. Then the request is not marked as answered, and the field says which date is allowed. (BR-04) Rests on external rules still to confirm: PRIV-04.
 - **E-32.** Given the privacy lead extends a request with a reason. Then the product sends nothing to the person, and records the reason and the day of the extension. (BR-02) Rests on external rules still to confirm: PRIV-02, PRIV-03.
 - **E-33.** Given the privacy lead asks for proof of identity with a doubt written. Then the product sends nothing to the person, and records the doubt and the day it was asked. (BR-05) Rests on external rules still to confirm: PRIV-07.
 - **E-34.** Given the support agent sends a request on some days after it reached the shop. Then the due date counts from the day it reached the shop, and the day it was sent is recorded apart. (BR-01, BR-08) Rests on external rules still to confirm: PRIV-01.
