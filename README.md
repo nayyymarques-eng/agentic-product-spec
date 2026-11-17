@@ -1,4 +1,4 @@
-# product-spec
+# agentic-product-spec
 
 A set of files that hold everything a product knows that an agent cannot find in the code, and scripts that check the product against them.
 
