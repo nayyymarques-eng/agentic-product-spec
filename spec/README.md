@@ -105,6 +105,8 @@ Every change to a flow or its screens changes the feature's spec hash, so every 
 - **A change to what the feature does** needs the full review, run three times: a new or changed step, state, dialog, button, citation or eval, or a new decision.
 - **A change that only rewords** needs a light review, run once: the words a screen shows, a step's description, an explanation, a typo. A model reading the new words once is enough to catch a word that now says something else, such as a banner that promises what a rule does not allow.
 
+Three runs is the minimum for a full review: the smallest number where most runs can agree. It is each team's choice, not a standard. A team with more at stake, such as a regulated product before launch, can run it five times and keep what three runs agree on. More runs find more, and cost more.
+
 `npm run context <flow>` prints two hashes. The spec hash changes with any edit. The structure hash changes only when what the feature does changes: its steps, states, dialogs, buttons, citations, decisions and evals. A light review's report starts with three lines: `Review: light`, the spec hash, and the structure hash. The spec check accepts it only when that structure hash is the current one and a full review report names it too. So a change that does more than reword cannot pass on a light review.
 
 ## How a flow is written
