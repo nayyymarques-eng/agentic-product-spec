@@ -16,3 +16,10 @@
 
 # The persona sheets: research.
 # /spec/personas/         @your-org/research
+
+# Each feature: its owner approves its flow, its screens and its feature decision log.
+# /spec/flows/answer-a-request.md   @your-org/requests-team
+# /spec/screens/request.md          @your-org/requests-team
+
+# A proposed decision (Status: proposed) names in Decided by the person who must approve it. Make that person,
+# or their team, the owner of the file it lives in, so the pull request waits for them.

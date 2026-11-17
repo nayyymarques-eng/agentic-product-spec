@@ -1,6 +1,7 @@
 # Spec review: Answer a request
 
 Spec hash: c31bb90dd434
+Structure hash: 4f8b8dd7b7c1
 
 - Feature: `spec/flows/answer-a-request.md` and `spec/screens/request.md`
 - Role: privacy lead (R-01), persona sheet `spec/personas/privacy-lead.md`

@@ -172,6 +172,27 @@ export function featureHash(flow) {
   return h.digest('hex').slice(0, 12);
 }
 
+/** A fingerprint of what a feature does, without its words: each step's landing and next step, each state's and
+ * dialog's buttons, citations and when it shows, each decision's ID and every eval row. A change that keeps it the
+ * same only rewords: the words a screen shows, a step's description, an explanation. Such a change gets a light
+ * review, one run instead of three (spec/README.md, "How much review a change needs"). */
+export function structureHash(spec, flow) {
+  const names = new Set(flow.steps.map(x => x.screen).filter(Boolean));
+  const screens = spec.screens.filter(s => names.has(s.name)).sort((a, b) => a.name.localeCompare(b.name));
+  const acts = a => a.map(x => [x.label, x.variant, x.disabled, x.untilWritten, x.condition]);
+  const shape = {
+    steps: flow.steps.map(x => [x.id, x.who, x.screen, x.states, x.dialog, x.to, x.ends]),
+    decisions: flow.decisions.map(d => d.ID), flowEvals: flow.evals.map(e => [e.Eval, e.rules]),
+    screens: screens.map(s => ({
+      name: s.name, roles: s.roles, goals: s.goals,
+      states: s.states.map(st => [st.id, st.status?.tone ?? '', st.banner?.tone ?? '', acts(st.actions), st.rules, st.goals, st.never, st.hidesHappened]),
+      dialogs: s.dialogs.map(d => [d.id, d.opensFrom, d.over, acts(d.actions), d.rules, d.goals]),
+      evals: s.evals,
+    })),
+  };
+  return createHash('sha256').update(JSON.stringify(shape)).digest('hex').slice(0, 12);
+}
+
 /** The whole spec. */
 export function readSpec() {
   const sources = readdirSync(join(specDir, 'sources')).filter(f => f.endsWith('.md') && f !== 'README.md')

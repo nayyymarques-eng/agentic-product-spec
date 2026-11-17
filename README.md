@@ -98,6 +98,7 @@ Each break below was made on purpose, one at a time. Each line is what the check
 | No step opens a dialog | `SPEC-09 (DL-02 is opened by no step of a flow)` |
 | A dialog has no eval where it closes | `SPEC-06 (DL-02 has no eval where it closes, on a state it does not open over)` |
 | A dialog opens over a state that has no button for it | `SPEC-15 (DL-02 opens from "Ask for proof of identity", which ST-03 does not offer)` |
+| A decision is still proposed | `SPEC-16 (D-01 is proposed: it merges once the person in Decided by (Product designer, with the privacy lead) sets its Status to decided)` |
 | A step goes to a step that does not exist | `SPEC-08 (F-02 goes to F-09, which is not a step)` |
 
 The spec check also found a real gap in the design system: the spec needs disabled buttons in its three dialogs, and the design system's button has no disabled state. This does not block the build. It is reported for the design system's owner to decide:
@@ -116,7 +117,7 @@ SPEC-07 DL-03 ("Mark as answered" is disabled; the button contract has no disabl
 | `spec/personas/` | One persona sheet per role, with made-up data |
 | `src/request.ts` | The behaviour of the example screen in code: how the due date is counted, which state applies, which buttons show. Each part cites the rule IDs it applies |
 | `screens/request.tsx` | The example screen, built with [ai-ready-design-system](https://github.com/nayyymarques-eng/ai-ready-design-system). It also tells the checks how to read an eval row (`fromExample`) and how to fill the spec's {words} (`words`), so the checks work for any screen |
-| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-15 |
+| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-16 |
 | `harness/behaviour.mjs` | The behaviour check: BEH-01 to BEH-09 |
 | `harness/context.mjs` | `npm run context`: one feature's part of the spec, for an agent |
 | `.claude/agents/rules-watch.md` | The rules watch, run on a schedule |
@@ -144,7 +145,7 @@ The smallest start: one flow, the screen it lands on, and five evals.
 |---|---|---|
 | The spec's files | Which files it keeps, and their names | Every rule, goal, decision, step and state has an ID, and everything that uses it cites the ID |
 | Sources | Laws, regulator guidance, contracts, policies | A rule with no source is a question, not a rule |
-| Decisions | Who may decide, and how much of the why to write | One log for the product; each decision says why, who, when and what it applies to |
+| Decisions | Who may decide, and how much of the why to write | A decision about the whole product goes in the product decision log; every decision made for a feature goes in that feature's decision log. Each says why, who, when and what it applies to |
 | Persona sheets | How many interviews make a trait strong | Each trait cites its source; what nobody said is a hypothesis |
 | Flows | How many, and how detailed | Every step lands on a state, and every state is reached by a step |
 | States | How many, and which one wins when two apply | Every state has at least one eval, and the evals are the tests |
@@ -160,7 +161,8 @@ The smallest start: one flow, the screen it lands on, and five evals.
 - The spec review is an AI model reading the spec. Three runs reduce what one run misses or invents; they do not remove it.
 - The behaviour check looks at the screen once per eval, as a still screen. It does not click through the flow, or test timing, focus or the keyboard.
 - It does not test usability or say what to build.
-- It was built on one flow and one screen of a made-up product. It has not been tried on a large product or by a team.
+- It was built on one flow and one screen of a made-up product, by one person working alone. It has not been tried on a large product or by a team: who may change which part of the spec, who approves each change, and how two people working on the same decision agree are still open.
+- It works the same for a new product and an existing one: it needs the decisions, rules and behaviour written down either way. How to recover them from an existing product is not covered.
 - The external rules in `spec/sources/` are marked "to confirm": nobody has read the GDPR text for this example. The persona sheets are made up.
 
 ## License
