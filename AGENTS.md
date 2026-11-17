@@ -13,9 +13,10 @@ Work starts from a trigger: a feature someone asks for, a rule that changes, or 
 5. For every pair of states that can be true at once, write an eval that sets up both and says which wins and what it keeps (`spec/README.md`, "When two states can be true at once").
 6. Behaviour no screen shows, such as a message the product must never send, gets a flow eval under `## Evals` in the flow file. Every business rule needs at least one eval, on a screen or in a flow.
 7. Write what the feature leaves out on purpose under `## Not covered`, in the flow and in each screen, with the open question that holds each gap.
+8. A dialog is a layer over a state, not a state: write it under the screen's `## Dialogs`, with the states it opens over, and name it in the Dialog column of the step that opens it.
 
 ## Copy and content
-The words a screen shows are part of the spec: each state's Status, Banner, Dialog and Says. Content that is not a screen, such as an article, an email template or a help page, lives outside the spec, and cites the decisions and rules it follows, by ID, so a search finds it when they change.
+The words a screen shows are part of the spec: each state's Status, Banner and Says, and each dialog's Title and Asks. Content that is not a screen, such as an article, an email template or a help page, lives outside the spec, and cites the decisions and rules it follows, by ID, so a search finds it when they change.
 
 ## To build or change a screen
 1. Run `npm run context <flow or screen>` and read what it prints: the flows that land on the screen, the screen with its states and evals, and only the rules, decisions, open questions, external rules, goals, roles and persona sheets they cite or that name them. Read nothing else from `spec/` unless it points you there.
@@ -28,4 +29,4 @@ The words a screen shows are part of the spec: each state's Status, Banner, Dial
 Change the spec first: the rule, the flow step if the task changes, the state, and at least one eval that shows the change. The spec can merge before the screen is built: mark each new state `- Built: not yet` (or the whole screen, under its title), and remove the mark in the pull request that builds it. Then run `npm run handoff`, so whoever builds the backend reads the new version. A decision gets a row, with why, who decided and the date: in the flow file under `## Decisions` when only this feature needs it, or in `spec/decisions.md`, with what it applies to, when other features share it.
 
 ## To review a spec
-Read only `spec/`, starting from `npm run context <flow>` for the feature under review. Check each state against the rules and the goals it cites, each rule against its sources, and each feature against the persona sheets of the roles in its flow. Say which example is missing, which rule no state applies, and which word means two things. A review run once can miss things or invent them: run it three times, and keep the findings at least two runs agree on.
+Read only `spec/`, starting from `npm run context <flow>` for the feature under review. Check each state against the rules and the goals it cites, each rule against its sources, and each feature against the persona sheets of the roles in its flow. Say which example is missing, which rule no state applies, and which word means two things. A review run once can miss things or invent them: run it three times, and keep the findings at least two runs agree on. The feature is ready to merge when `spec/README.md`, "When a feature is ready to merge", says so.

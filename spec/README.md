@@ -68,7 +68,7 @@ A screen lists its states in order, and when two could apply, the first one wins
 
 - **Time passes during another state**: the due date passes while the request waits for proof. A state that time brings in keeps the limits of the state it interrupts.
 - **Who is looking**: a role with a narrower view of a state that is also late, or also blocked.
-- **A dialog open over a state**: what the state underneath still shows, and whether the dialog closes when time ends it. An action that needs something written, such as a reason, a doubt or a date, gets a dialog state of its own, with its button disabled until it is written.
+- **A dialog open when time moves on**: a dialog is not a state, so it never hides one (see "Dialogs" below). It needs an eval where the request moves to a state it does not open over, and the dialog closes.
 - **A final state against time**: an answer sent after the due date. A final state keeps what happened before it, such as how late it was.
 - **Events out of order**: proof that arrives after the due date; an action tried after it is no longer allowed.
 - **Undo**: the state a request goes back to.
@@ -83,6 +83,17 @@ Each date has one name, and one day it is. Two days that can differ, such as the
 ## What a feature leaves out
 
 A flow file and a screen file end with `## Not covered`: what the feature leaves out on purpose, each in one line, with the open question that holds it when there is one. A gap someone decided to leave is a decision; a gap nobody saw is a finding. The spec review reads the list, and does not report what is on it.
+
+## When a feature is ready to merge
+
+Each review can find something new, because each change gives it more to read. So a feature does not wait for a review that finds nothing. It merges when:
+
+1. the spec check passes;
+2. a review of the current version is in, run three times;
+3. no finding two runs agree on goes against an external rule or a decision;
+4. every other finding two runs agree on is fixed, written as an open question for an expert, or listed under `## Not covered`.
+
+A finding only one run made is a question for a person, not a fix.
 
 ## How a flow is written
 
@@ -103,15 +114,16 @@ Then a table, one row per step:
 | What happens | The action, or the question for a choice |
 | Screen | The screen file the step lands on, or `-` for a choice |
 | States | The states of that screen the step can show, by ID |
+| Dialog | The dialog the step opens on that screen, by ID, or `-` |
 | Next | The steps that can come next, with the condition for each, or `end` |
 
 An example row, from `flows/answer-a-request.md`:
 
 ```
-| F-04 | R-01 | Writes the doubt, asks for proof of identity, and waits | request | ST-13, ST-05, ST-09 | F-05 when the proof arrives, F-06 to extend while waiting, or F-08 when the due date passes |
+| F-04 | R-01 | Writes the doubt, asks for proof of identity, and waits | request | ST-05, ST-08 | DL-02 | F-05 when the proof arrives, F-06 to extend while waiting, or F-08 when the due date passes |
 ```
 
-The spec check reads the flow both ways: every step must land on a state that exists, and every state must be reached by a step. A state no step reaches means a step is missing, or the state should not exist.
+The spec check reads the flow both ways: every step must land on a state and open a dialog that exist, and every state and every dialog must be reached by a step. A state no step reaches means a step is missing, or the state should not exist.
 
 Some of what a flow does shows on no screen, such as a message the product must never send. It gets an eval under `## Evals`, in the flow file:
 
@@ -124,7 +136,7 @@ Every business rule needs at least one eval, on a screen or in a flow. The hando
 
 ## How a screen is written
 
-A screen file has three parts: a few lines about the whole screen, one section per state, and a table of evals.
+A screen file has four parts: a few lines about the whole screen, one section per state, one section per dialog, and a table of evals.
 
 A state is one situation the screen can be in, such as "overdue" or "answered". For each state, the file says when it applies, what the screen shows and which buttons it offers. The table of evals then gives exact situations, with dates, and the state each one must get. The checks build the screen for each eval, so every eval is also a test.
 
@@ -136,10 +148,11 @@ An example, from `screens/request.md`:
 - Roles: R-01, R-02
 - Goals: G-01, G-02, G-03, G-04
 - Never shows: €, fee, price          ← text that must not appear in any state
+- Shows in every state: "Reached the shop on {received}", ...   ← text every state shows
 
 ## States
 ### ST-03 Overdue
-- When: not answered, and today is after the due date. Any open dialog closes ...
+- When: not answered, and today is after the due date
 - Status: badge critical "Overdue by {overdue}"
 - Banner: critical "This request is past its due date. ..."
 - Actions: Mark as answered (primary)
@@ -148,19 +161,38 @@ An example, from `screens/request.md`:
 ```
 
 - **When** says, in words, when the screen is in this state. The evals below make it exact.
-- **Status**, **Banner** and **Dialog** name a component of the design system, its variant and the words it shows. `none` means the state has none.
+- **Status** and **Banner** name a component of the design system, its variant and the words it shows. `none` means the state has none.
 - **Actions** lists the buttons in order, each with its variant. A button that shows but cannot be used yet says `disabled`.
 - **Says** lists words that must appear.
 - **Rules** and **Goals** say why the state exists.
 - **Built: not yet** marks a state the spec has merged and nobody has built yet. The same line under the screen's title marks the whole screen. The behaviour check and the design system check skip what is marked and list it on every run, and the handoff shows it. The pull request that builds it removes the line.
 
-The evals table is the exact truth. Each row is one eval, with the facts that decide the state, and the state and actions the screen must show. The checks build the screen from each row, so every row is also a test.
+### Dialogs
+
+A dialog is not a state. It opens over a state, from one of that state's buttons, and the state stays as it is under it: an overdue request still says "overdue" while the lead writes the date of the answer. So a dialog never hides what the state shows, and a state never has to repeat itself for each dialog. Write each dialog under `## Dialogs`:
+
+```
+### DL-01 Extend
+- Opens from: Extend                       ← the button that opens it, offered by every state it opens over
+- Over: ST-01, ST-02, ST-05, ST-08          ← the only states it shows over
+- Title: "Extend the due date by two months"
+- Asks: "Reason, for the letter to the person"
+- Actions: Extend (primary, disabled until written), Cancel (tertiary)
+- Closes when: the due date passes. Nothing is extended.
+- Rules: BR-02
+```
+
+When time moves the request to a state the dialog does not list, the dialog closes and nothing it asked for is done. The flow step that opens it names it in its Dialog column. When something replaces the whole screen, such as a step of several pages, write it as a state instead: the choice is made per screen, in the spec, where everyone sees it.
+
+### Evals
+
+The evals table is the exact truth. Each row is one eval, with the facts that decide the state, and the state and actions the screen must show. Two columns are for dialogs: Dialog, the one the lead opened, and Written, whether they have written in it. When the dialog shows, Actions are its buttons. The checks build the screen from each row, so every row is also a test. Each dialog needs an eval that shows it, and one where it closes.
 
 ## Where the checks come in
 
 | Gate | When | What it checks | Run |
 |---|---|---|---|
-| Spec check | Every change to the spec | What is missing or out of date: IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and every state is reached, every state and every rule covered by an eval, nothing cites a replaced decision, no open question reaches beyond one feature, every component named exists in the design system. It also lists external rules still "to confirm" past their "Check again on" date | `npm run spec` |
+| Spec check | Every change to the spec | What is missing or out of date: IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and opens a dialog that exist, every state and every dialog is reached, every dialog opens from a button the states under it offer, every state, dialog and rule covered by an eval, nothing cites a replaced decision, no open question reaches beyond one feature, every component named exists in the design system. It also lists external rules still "to confirm" past their "Check again on" date | `npm run spec` |
 | Spec review | Before each merge | A synthetic user reads a feature's flow, screens and evals as each role, against the external rules and the persona sheets, and respects the decisions. Run three times; keep what two runs agree on. The report names the feature's spec hash, and the spec check fails until a report names the current one | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
 | Rules watch, optional | On a schedule, when the external rules change often, as in a regulated product | Reads the sources again, turns a changed rule back to "to confirm", and lists everything that depends on it | `.claude/agents/rules-watch.md` |
 | Behaviour check | Every pull request that touches the screen | The built screen against every state and every eval, and every rule a state applies named in the screen's code | `npm run behaviour` |

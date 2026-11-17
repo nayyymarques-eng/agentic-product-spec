@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { dsPath, list, readSpec, root, notBuiltYet } from './spec.mjs';
+import { dialogShown, dsPath, list, readSpec, root, notBuiltYet } from './spec.mjs';
 import { renderExamples, out } from './render.mjs';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
@@ -50,14 +50,14 @@ export async function checkBehaviour() {
 
     // BEH-08: the code knows only the states the spec has.
     const code = readFileSync(join(root, 'src', `${screen.name}.ts`), 'utf8');
-    const inCode = new Set(code.match(/ST-\d{2}/g) ?? []);
-    const inSpec = new Set(screen.states.map(s => s.id));
+    const inCode = new Set(code.match(/\b(?:ST|DL)-\d{2}\b/g) ?? []);
+    const inSpec = new Set([...screen.states, ...screen.dialogs].map(s => s.id));
     for (const id of inCode) if (!inSpec.has(id)) fail('BEH-08', 'code', `the code has ${id}, which the spec does not`);
     // BEH-09: every rule the screen's states apply is named, by ID, where the code applies it. A rule nobody can
     // find in the code cannot be found again when it changes.
     const view = join(root, 'screens', `${screen.name}.tsx`);
     const both = code + (existsSync(view) ? readFileSync(view, 'utf8') : '');
-    for (const id of new Set(screen.states.flatMap(s => s.rules))) if (!new RegExp(`\\b${id}\\b`).test(both)) fail('BEH-09', 'code', `${id} is applied by a state, and named nowhere in src/${screen.name}.ts or screens/${screen.name}.tsx`);
+    for (const id of new Set([...screen.states, ...screen.dialogs].flatMap(s => s.rules))) if (!new RegExp(`\\b${id}\\b`).test(both)) fail('BEH-09', 'code', `${id} is applied by a state, and named nowhere in src/${screen.name}.ts or screens/${screen.name}.tsx`);
     // ...and the code names no rule or decision the spec no longer has: a deleted rule, or a replaced decision.
     const live = new Set([...spec.rules.map(r => r.ID), ...spec.decisions.map(d => d.ID)]);
     for (const id of new Set(both.match(/\b(?:BR|D)-\d{2}\b/g) ?? [])) if (!live.has(id)) fail('BEH-09', 'code', `the code names ${id}, which is not a live rule or decision in the spec`);
@@ -67,9 +67,13 @@ export async function checkBehaviour() {
       const ex = row.Eval;
       if (!words) { fail('BEH-06', ex, `screens/${screen.name}.tsx exports no words(), so the spec's {words} cannot be filled`); continue; }
       const want = screen.states.find(s => s.id === row.State);
+      // A dialog is a layer: the state under it keeps its status and banner; the buttons are the dialog's.
+      const dlg = dialogShown(screen, row);
+      const written = (row.Written ?? '-') !== '-';
       // BEH-07: the rules, before anything is drawn: due date, state and actions from the code alone.
       if (logic.due !== row.Due) fail('BEH-07', ex, `due date ${logic.due}, the spec says ${row.Due}`);
       if (logic.state !== row.State) fail('BEH-07', ex, `state ${logic.state}, the spec says ${row.State}`);
+      if ((logic.dialog ?? null) !== (dlg?.id ?? null)) fail('BEH-07', ex, `dialog ${logic.dialog ?? 'none'}, the spec says ${dlg?.id ?? 'none'}`);
       const wantLabels = list(row.Actions);
       if (logic.actions.join(', ') !== wantLabels.join(', ')) fail('BEH-07', ex, `actions "${logic.actions.join(', ')}", the spec says "${wantLabels.join(', ')}"`);
 
@@ -90,15 +94,16 @@ export async function checkBehaviour() {
         if (!got.banner || got.banner.tone !== want.banner.tone || got.banner.text !== text) fail('BEH-04', ex, `banner ${got.banner ? `${got.banner.tone} "${got.banner.text}"` : 'none'}, the spec says ${want.banner.tone} "${text}"`);
       } else if (got.banner) fail('BEH-04', ex, `banner "${got.banner.text}", the spec says none`);
       // BEH-05: the dialog and the buttons, in order, each with its variant, disabled where the spec says.
-      if ((want.dialog ?? null) !== got.dialog) fail('BEH-05', ex, `dialog "${got.dialog}", the spec says "${want.dialog}"`);
+      if ((dlg?.title ?? null) !== got.dialog) fail('BEH-05', ex, `dialog "${got.dialog ?? 'none'}", the spec says "${dlg?.title ?? 'none'}"`);
       const labels = got.buttons.map(b => b.label);
       if (labels.join(', ') !== wantLabels.join(', ')) fail('BEH-05', ex, `buttons "${labels.join(', ')}", the spec says "${wantLabels.join(', ')}"`);
       for (const b of got.buttons) {
-        const a = want.actions.find(x => x.label === b.label);
-        if (a && (a.variant !== b.variant || a.disabled !== b.disabled)) fail('BEH-05', ex, `"${b.label}" is ${b.variant}${b.disabled ? ', disabled' : ''}, the spec says ${a.variant}${a.disabled ? ', disabled' : ''}`);
+        const a = (dlg ?? want).actions.find(x => x.label === b.label);
+        const off = a && (a.disabled || (a.untilWritten && !written));
+        if (a && (a.variant !== b.variant || off !== b.disabled)) fail('BEH-05', ex, `"${b.label}" is ${b.variant}${b.disabled ? ', disabled' : ''}, the spec says ${a.variant}${off ? ', disabled' : ''}`);
       }
       // BEH-06: the words that must show, and the ones that never may.
-      for (const s of want.says) if (!got.body.includes(fill(s, words))) fail('BEH-06', ex, `"${fill(s, words)}" is missing`);
+      for (const s of [...screen.always, ...want.says, ...(dlg?.asks ?? [])]) if (!got.body.includes(fill(s, words))) fail('BEH-06', ex, `"${fill(s, words)}" is missing`);
       for (const n of screen.never) if (got.body.toLowerCase().includes(n.toLowerCase())) fail('BEH-06', ex, `shows "${n}"`);
     }
   }

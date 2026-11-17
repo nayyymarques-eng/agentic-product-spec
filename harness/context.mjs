@@ -23,7 +23,7 @@ const here = new Set([...flows.map(f => f.name), ...screens.map(s => s.name)]);
 // What the feature cites, then what those cite in turn, until nothing new turns up.
 const ids = new Set([
   ...flows.flatMap(f => [...f.roles, ...f.goals]),
-  ...screens.flatMap(s => [...s.roles, ...s.goals, ...s.states.flatMap(st => [...st.rules, ...st.goals])]),
+  ...screens.flatMap(s => [...s.roles, ...s.goals, ...[...s.states, ...s.dialogs].flatMap(st => [...st.rules, ...st.goals])]),
   ...[...spec.decisions, ...spec.questions].filter(d => list(d['Applies to']).some(w => here.has(w) || w === 'product')).map(d => d.ID),
   ...spec.rules.filter(r => list(r.Where).some(w => here.has(w))).map(r => r.ID),
 ]);

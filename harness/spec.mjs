@@ -67,7 +67,7 @@ function part(s) {
   return { tone, text: quoted(s)[0] ?? '' };
 }
 
-/** "Extend (primary, disabled), Cancel (tertiary)" → [{ label, variant, disabled, condition }] */
+/** "Extend (primary, disabled until written), Cancel (tertiary)" → [{ label, variant, disabled, untilWritten, condition }] */
 function actions(s) {
   if (!s || s.trim().toLowerCase() === 'none') return [];
   return splitTop(s).map(a => {
@@ -75,7 +75,10 @@ function actions(s) {
     const close = a.indexOf(')', open);
     const label = (open >= 0 ? a.slice(0, open) : a).trim();
     const inside = open >= 0 ? a.slice(open + 1, close).split(',').map(x => x.trim()) : [];
-    return { label, variant: inside[0] ?? '', disabled: inside.includes('disabled'), condition: close >= 0 ? a.slice(close + 1).trim() : '' };
+    return {
+      label, variant: inside[0] ?? '', disabled: inside.includes('disabled'), untilWritten: inside.includes('disabled until written'),
+      condition: close >= 0 ? a.slice(close + 1).trim() : '',
+    };
   });
 }
 
@@ -104,16 +107,29 @@ function screen(file) {
     const b = bullets(block);
     return {
       id, name: heading.slice(id.length).trim(), when: b.When ?? '',
-      status: part(b.Status), banner: part(b.Banner), dialog: b.Dialog ? quoted(b.Dialog)[0] : null,
+      status: part(b.Status), banner: part(b.Banner),
       actions: actions(b.Actions), says: quoted(b.Says), rules: list(b.Rules), goals: list(b.Goals),
       notBuilt: notYet(b.Built),
+    };
+  });
+  // Dialogs are a layer: each opens over some states, which keep their status and banner under it. A dialog
+  // shows only over the states it lists; when time moves the request to another state, the dialog closes.
+  const dialogsText = text.split('\n## Dialogs')[1]?.split('\n## ')[0] ?? '';
+  const dialogs = dialogsText.split('\n### ').slice(1).map(block => {
+    const [heading] = block.split('\n');
+    const id = heading.split(' ')[0];
+    const b = bullets(block);
+    return {
+      id, name: heading.slice(id.length).trim(), opensFrom: b['Opens from'] ?? '', over: list(b.Over),
+      title: quoted(b.Title)[0] ?? '', asks: quoted(b.Asks), actions: actions(b.Actions), closes: b['Closes when'] ?? '',
+      rules: list(b.Rules), goals: list(b.Goals),
     };
   });
   const evals = tables(text.split('\n## Evals')[1] ?? '')[0] ?? [];
   return {
     name, file: `spec/screens/${file}`, title: text.split('\n')[0].replace(/^# Screen: /, ''),
     template: top.Template ?? '', roles: list(top.Roles), goals: list(top.Goals), never: list(top['Never shows']),
-    notBuilt: notYet(top.Built), states, evals,
+    always: quoted(top['Shows in every state']), notBuilt: notYet(top.Built), states, dialogs, evals,
   };
 }
 
@@ -122,7 +138,7 @@ function flow(file) {
   const top = bullets(text.split('\n## ')[0]);
   const steps = (tables(text.split('\n## Steps')[1] ?? '')[0] ?? []).map(r => ({
     id: r.Step, who: r.Who, what: r['What happens'], screen: r.Screen === '-' ? '' : r.Screen,
-    states: list(r.States), next: r.Next, to: [...r.Next.matchAll(/F-\d{2}/g)].map(m => m[0]), ends: /\bend\b/.test(r.Next),
+    states: list(r.States), dialog: list(r.Dialog)[0] ?? '', next: r.Next, to: [...r.Next.matchAll(/F-\d{2}/g)].map(m => m[0]), ends: /\bend\b/.test(r.Next),
   }));
   // Evals for what the flow does that no screen shows, such as a message the product must never send.
   const evals = (tables(text.split('\n## Evals')[1] ?? '')[0] ?? []).map(r => ({ ...r, rules: list(r.Rules) }));
@@ -167,4 +183,10 @@ export function readSpec() {
     flows,
     screens: readdirSync(join(specDir, 'screens')).filter(f => f.endsWith('.md')).sort().map(screen),
   };
+}
+
+/** The dialog an eval row must show: the one it opens, if the row's state is one the dialog opens over; else none. */
+export function dialogShown(screen, row) {
+  const d = screen.dialogs.find(x => x.id === row.Dialog);
+  return d && d.over.includes(row.State) ? d : null;
 }

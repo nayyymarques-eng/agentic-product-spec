@@ -50,24 +50,24 @@ The files in `spec/` describe a made-up product, so the kit has something real t
 The product is an inbox where a shop's privacy lead answers people's requests for a copy of their personal data, under the GDPR. The legal time to answer is one month, and it can be extended once by two months. The synthetic user in [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) reviews this same spec.
 
 - **One flow**, `spec/flows/answer-a-request.md`: it starts when a person emails the shop, and ends when the privacy lead has recorded the answer. 8 steps, 5 evals for what no screen shows, the decisions only this feature needs, and what it leaves out.
-- **One screen**, `spec/screens/request.md`: one request, as the privacy lead or the support agent sees it. 13 states and 29 evals, with one eval for every pair of states that can be true at once.
+- **One screen**, `spec/screens/request.md`: one request, as the privacy lead or the support agent sees it. 10 states, 3 dialogs that open over them, and 34 evals, with one eval for every pair of states that can be true at once.
 
 The flow, as the handoff draws it:
 
 ```mermaid
 flowchart TD
   T(["A person emails the shop for a copy of their personal data"])
-  T --> F01["F-01 The support agent sends the email to the privacy lead<br/>ST-08"]
-  F01 --> F02["F-02 The privacy lead opens the request and sees its due date<br/>ST-01, ST-02"]
+  T --> F01["F-01 The support agent sends the email to the privacy lead<br/>ST-07"]
+  F01 --> F02["F-02 The privacy lead opens the request and sees its due date<br/>ST-01, ST-02, ST-03"]
   F02 --> F03{"F-03 Is it clear who the person is?"}
-  F03 -- "no" --> F04["F-04 Writes the doubt, asks for proof of identity, and waits<br/>ST-13, ST-05, ST-09"]
+  F03 -- "no" --> F04["F-04 Writes the doubt, asks for proof of identity, and waits<br/>DL-02, ST-05, ST-08"]
   F03 -- "yes" --> F05{"F-05 Can the answer go out by the due date?"}
   F04 -- "proof arrives" --> F05
   F04 -- "to extend while waiting" --> F06
-  F05 -- "no" --> F06["F-06 Extends the due date by two months, with a reason<br/>ST-07, ST-04"]
-  F05 -- "yes" --> F07["F-07 Sends the answer, and records the date it was sent<br/>ST-12, ST-06, ST-11"]
+  F05 -- "no" --> F06["F-06 Extends the due date by two months, with a reason<br/>DL-01, ST-04"]
+  F05 -- "yes" --> F07["F-07 Sends the answer, and records the date it was sent<br/>DL-03, ST-06, ST-10"]
   F06 --> F07
-  F02 & F04 & F06 -- "the due date passes" --> F08["F-08 Overdue<br/>ST-03, ST-10"]
+  F02 & F04 & F06 -- "the due date passes" --> F08["F-08 Overdue<br/>ST-03, ST-09"]
   F08 --> F07
   F07 --> E(["The privacy lead has recorded the date the answer was sent"])
 ```
@@ -78,11 +78,12 @@ Each break below was made on purpose, one at a time. Each line is what the check
 
 | What was broken | What the check printed |
 |---|---|
-| An overdue request still offers Extend | `BEH-05 E-11 (buttons "Mark as answered, Extend", the spec says "Mark as answered")` |
-| The extension is three months instead of two | `BEH-07 E-11 (state ST-04, the spec says ST-03)` |
+| An overdue request still offers Extend | `BEH-07 E-03 (actions "Mark as answered, Extend", the spec says "Mark as answered")` |
+| The extension is three months instead of two | `BEH-07 E-04 (due date 2027-03-03, the spec says 2027-02-03)` |
 | The badge says "Late" instead of "Overdue" | `BEH-03 E-03 (status critical "Late by 1 day", the spec says critical "Overdue by 1 day")` |
 | An overdue request waiting for proof can no longer record that the proof arrived | `BEH-07 E-12 (actions "Mark as answered", the spec says "Proof received, Mark as answered")` |
-| A fee appears on the screen | `BEH-06 E-14 (shows "€")` |
+| A fee appears on the screen | `BEH-06 E-01 (shows "€")` |
+| The Extend dialog stays open after the due date has passed | `BEH-07 E-19 (dialog DL-01, the spec says none)` |
 | Extend can be used before the reason is written | `BEH-05 E-07 ("Extend" is primary, the spec says primary, disabled)` |
 | The code has a state the spec does not have | `BEH-08 code (the code has ST-14, which the spec does not)` |
 | A rule a state applies is named nowhere in the code | `BEH-09 code (BR-06 is applied by a state, and named nowhere in src/request.ts or screens/request.tsx)` |
@@ -94,14 +95,17 @@ Each break below was made on purpose, one at a time. Each line is what the check
 | A state uses a badge the design system does not have | `SPEC-05 (ST-06: badge "success" is not a badge variant)` |
 | A state has no eval | `SPEC-06 (ST-04 has no eval)` |
 | A step of the flow was removed | `SPEC-09 (ST-05 is reached by no step of a flow)` |
+| No step opens a dialog | `SPEC-09 (DL-02 is opened by no step of a flow)` |
+| A dialog has no eval where it closes | `SPEC-06 (DL-02 has no eval where it closes, on a state it does not open over)` |
+| A dialog opens over a state that has no button for it | `SPEC-15 (DL-02 opens from "Ask for proof of identity", which ST-03 does not offer)` |
 | A step goes to a step that does not exist | `SPEC-08 (F-02 goes to F-09, which is not a step)` |
 
 The spec check also found a real gap in the design system: the spec needs disabled buttons in its three dialogs, and the design system's button has no disabled state. This does not block the build. It is reported for the design system's owner to decide:
 
 ```
-SPEC-07 ST-12 ("Mark as answered" is disabled; the button contract has no disabled state)
-SPEC-07 ST-07 ("Extend" is disabled; the button contract has no disabled state)
-SPEC-07 ST-13 ("Ask" is disabled; the button contract has no disabled state)
+SPEC-07 DL-01 ("Extend" is disabled; the button contract has no disabled state)
+SPEC-07 DL-02 ("Ask" is disabled; the button contract has no disabled state)
+SPEC-07 DL-03 ("Mark as answered" is disabled; the button contract has no disabled state)
 ```
 
 ## The files
@@ -112,7 +116,7 @@ SPEC-07 ST-13 ("Ask" is disabled; the button contract has no disabled state)
 | `spec/personas/` | One persona sheet per role, with made-up data |
 | `src/request.ts` | The behaviour of the example screen in code: how the due date is counted, which state applies, which buttons show. Each part cites the rule IDs it applies |
 | `screens/request.tsx` | The example screen, built with [ai-ready-design-system](https://github.com/nayyymarques-eng/ai-ready-design-system). It also tells the checks how to read an eval row (`fromExample`) and how to fill the spec's {words} (`words`), so the checks work for any screen |
-| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-14 |
+| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-15 |
 | `harness/behaviour.mjs` | The behaviour check: BEH-01 to BEH-09 |
 | `harness/context.mjs` | `npm run context`: one feature's part of the spec, for an agent |
 | `.claude/agents/rules-watch.md` | The rules watch, run on a schedule |

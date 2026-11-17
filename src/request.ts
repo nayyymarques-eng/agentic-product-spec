@@ -2,7 +2,8 @@
 // Each function cites the rules it applies. Spec: spec/screens/request.md, spec/rules.md.
 
 export type Role = 'R-01' | 'R-02';
-export type StateId = 'ST-01' | 'ST-02' | 'ST-03' | 'ST-04' | 'ST-05' | 'ST-06' | 'ST-07' | 'ST-08' | 'ST-09' | 'ST-10' | 'ST-11' | 'ST-12' | 'ST-13';
+export type StateId = 'ST-01' | 'ST-02' | 'ST-03' | 'ST-04' | 'ST-05' | 'ST-06' | 'ST-07' | 'ST-08' | 'ST-09' | 'ST-10';
+export type DialogId = 'DL-01' | 'DL-02' | 'DL-03';
 export type Action = { label: string; variant: 'primary' | 'secondary' | 'tertiary'; disabled?: boolean };
 
 /** Dates are days, written YYYY-MM-DD, in the shop's time zone. */
@@ -17,9 +18,8 @@ export type Request = {
   answeredOn?: string;
 };
 
-/** A dialog open on the screen, and what the lead has written in it so far. */
-export type Dialog = 'extend' | 'proof' | 'answer';
-export type View = { viewer: Role; today: string; dialog?: Dialog; draft?: string };
+/** Who looks, on which day, and the dialog the lead opened, with what they have written in it so far. */
+export type View = { viewer: Role; today: string; dialog?: DialogId; draft?: string };
 
 const DAY = 86_400_000;
 const toDate = (d: string) => new Date(`${d}T00:00:00Z`);
@@ -45,37 +45,50 @@ export function dueDate(r: Request): string {
 /** BR-05: asked for proof, and it has not arrived. */
 const waitingForProof = (r: Request) => Boolean(r.proofAskedOn && !r.proofReceivedOn);
 
-/** Which state the screen is in. The order is the spec's: the first state that applies wins. */
+/** Which state the screen is in. The order is the spec's: the first state that applies wins. A dialog is not a state. */
 export function stateOf(r: Request, v: View): StateId {
   const left = daysBetween(v.today, dueDate(r));
-  if (r.answeredOn) return daysBetween(dueDate(r), r.answeredOn) > 0 ? 'ST-11' : 'ST-06'; // BR-04, BR-03
-  if (v.viewer === 'R-02') return 'ST-08';                                               // BR-08
-  if (v.dialog === 'answer' && !v.draft?.trim()) return 'ST-12';                          // BR-04
-  if (left < 0) return waitingForProof(r) ? 'ST-10' : 'ST-03';                            // BR-03: closes any other dialog
-  if (v.dialog === 'extend' && !v.draft?.trim()) return 'ST-07';                          // BR-02
-  if (v.dialog === 'proof' && !v.draft?.trim()) return 'ST-13';                           // BR-05
-  if (waitingForProof(r)) return left <= 7 ? 'ST-09' : 'ST-05';                           // BR-05, BR-07
+  if (v.viewer === 'R-02') return 'ST-07';                                               // BR-08
+  if (r.answeredOn) return daysBetween(dueDate(r), r.answeredOn) > 0 ? 'ST-10' : 'ST-06'; // BR-04, BR-03
+  if (left < 0) return waitingForProof(r) ? 'ST-09' : 'ST-03';                            // BR-03
+  if (waitingForProof(r)) return left <= 7 ? 'ST-08' : 'ST-05';                           // BR-05, BR-07
   if (left <= 7) return 'ST-02';                                                         // BR-07
   if (r.extendedOn) return 'ST-04';                                                      // BR-02
   return 'ST-01';
 }
 
-/** The buttons the state offers, in order. */
+/** The states each dialog opens over. When time moves the request to another state, the dialog closes:
+ * Extend and Ask for proof are refused once the due date has passed (BR-02, BR-05); answering never is (BR-04). */
+const OVER: Record<DialogId, StateId[]> = {
+  'DL-01': ['ST-01', 'ST-02', 'ST-05', 'ST-08'],                            // BR-02
+  'DL-02': ['ST-01', 'ST-02', 'ST-04'],                                     // BR-05
+  'DL-03': ['ST-01', 'ST-02', 'ST-03', 'ST-04', 'ST-05', 'ST-08', 'ST-09'], // BR-04
+};
+
+/** The dialog on the screen, if any: the one the lead opened, while the request is in a state it opens over. */
+export function dialogOf(r: Request, v: View): DialogId | null {
+  return v.dialog && OVER[v.dialog].includes(stateOf(r, v)) ? v.dialog : null;
+}
+
+/** The buttons the screen offers, in order: the dialog's when one is open, else the state's. */
 export function actionsFor(r: Request, v: View): Action[] {
+  const cancel: Action = { label: 'Cancel', variant: 'tertiary' };
+  const blank = !v.draft?.trim();                            // D-09: the main button waits for what must be written
+  switch (dialogOf(r, v)) {
+    case 'DL-01': return [{ label: 'Extend', variant: 'primary', disabled: blank }, cancel];
+    case 'DL-02': return [{ label: 'Ask', variant: 'primary', disabled: blank }, cancel];
+    case 'DL-03': return [{ label: 'Mark as answered', variant: 'primary', disabled: blank }, cancel];
+  }
   const answer: Action = { label: 'Mark as answered', variant: 'primary' };
   const extend: Action = { label: 'Extend', variant: 'secondary' };
   const ask: Action = { label: 'Ask for proof of identity', variant: 'tertiary' };
   const received: Action = { label: 'Proof received', variant: 'primary' };
-  const cancel: Action = { label: 'Cancel', variant: 'tertiary' };
   const once = r.extendedOn ? [] : [extend];                 // extended once (BR-02)
   switch (stateOf(r, v)) {
-    case 'ST-06': case 'ST-08': case 'ST-11': return [];
-    case 'ST-12': return [{ label: 'Mark as answered', variant: 'primary', disabled: true }, cancel];
-    case 'ST-07': return [{ label: 'Extend', variant: 'primary', disabled: true }, cancel];
-    case 'ST-13': return [{ label: 'Ask', variant: 'primary', disabled: true }, cancel];
-    case 'ST-10': return [received, { ...answer, variant: 'tertiary' }]; // no Extend once the due date has passed (BR-02); answering stays least prominent (Q-05)
+    case 'ST-06': case 'ST-07': case 'ST-10': return [];
+    case 'ST-09': return [received, { ...answer, variant: 'tertiary' }]; // no Extend once the due date has passed (BR-02); answering stays least prominent (Q-05)
     case 'ST-03': return [answer];
-    case 'ST-09': case 'ST-05': return [received, ...once, { ...answer, variant: 'tertiary' }];
+    case 'ST-08': case 'ST-05': return [received, ...once, { ...answer, variant: 'tertiary' }];
     case 'ST-04': return [answer, ask];
     default: return [answer, ...once, ask];
   }

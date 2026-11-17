@@ -6,6 +6,7 @@ One request, opened from the privacy lead's list: the person's message, its due 
 - Roles: R-01, R-02
 - Goals: G-01, G-02, G-03, G-04
 - Never shows: €, fee, price
+- Shows in every state: "Reached the shop on {received}", "Sent to the privacy lead on {sent}"
 
 ## Words
 
@@ -24,9 +25,17 @@ The words in braces come from the eval row. A date shows as "3 Dec", with the ye
 
 ## States
 
-When two states could apply, the first one in this list wins. Every pair of states that can be true at once has an eval that says which one wins and what it keeps.
+When two states could apply, the first one in this list wins. Every pair of states that can be true at once has an eval that says which one wins and what it keeps. A dialog is not a state: it opens over one, under `## Dialogs`.
 
-### ST-11 Answered late
+### ST-07 Support agent's view
+- When: a support agent opens a request, whatever its state
+- Status: badge none "With the privacy lead"
+- Banner: none
+- Actions: none
+- Rules: BR-08
+- Goals: G-04
+
+### ST-10 Answered late
 - When: the privacy lead marked the request as answered, with a date after the due date
 - Status: badge warning "Answered {late} late"
 - Banner: none
@@ -44,26 +53,7 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Rules: BR-04
 - Goals: G-01, G-03
 
-### ST-08 Support agent's view
-- When: a support agent opens a request that is not answered, overdue or not
-- Status: badge none "With the privacy lead"
-- Banner: none
-- Actions: none
-- Says: "Sent to the privacy lead on {sent}"
-- Rules: BR-08
-- Goals: G-04
-
-### ST-12 Marking as answered, no date yet
-- When: the privacy lead clicked Mark as answered and has not entered the date the answer was sent
-- Status: badge info "Due on {due}"
-- Banner: none
-- Dialog: "Mark as answered"
-- Actions: Mark as answered (primary, disabled), Cancel (tertiary)
-- Says: "Date the answer was sent"
-- Rules: BR-04
-- Goals: G-03
-
-### ST-10 Overdue, waiting for proof of identity
+### ST-09 Overdue, waiting for proof of identity
 - When: not answered, today is after the due date, and the proof of identity asked for has not arrived
 - Status: badge critical "Overdue by {overdue}"
 - Banner: critical "This request is past its due date. You asked for proof of identity on {asked} and it has not arrived."
@@ -72,34 +62,14 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Goals: G-01, G-02
 
 ### ST-03 Overdue
-- When: not answered, and today is after the due date. Any open dialog closes: Extend and Ask for proof are gone once the due date has passed.
+- When: not answered, and today is after the due date
 - Status: badge critical "Overdue by {overdue}"
 - Banner: critical "This request is past its due date. It stays at the top of your list until you mark it as answered."
 - Actions: Mark as answered (primary)
 - Rules: BR-03, BR-02
 - Goals: G-01, G-02
 
-### ST-07 Extending, no reason yet
-- When: the privacy lead clicked Extend and has not written the reason
-- Status: badge info "Due {in}"
-- Banner: none
-- Dialog: "Extend the due date by two months"
-- Actions: Extend (primary, disabled), Cancel (tertiary)
-- Says: "Reason, for the letter to the person"
-- Rules: BR-02
-- Goals: G-01
-
-### ST-13 Asking for proof of identity, no doubt written yet
-- When: the privacy lead clicked Ask for proof of identity and has not written the doubt
-- Status: badge info "Due {in}"
-- Banner: none
-- Dialog: "Ask for proof of identity"
-- Actions: Ask (primary, disabled), Cancel (tertiary)
-- Says: "Your doubt about who wrote"
-- Rules: BR-05
-- Goals: G-01
-
-### ST-09 Waiting for proof of identity, due soon
+### ST-08 Waiting for proof of identity, due soon
 - When: the proof of identity asked for has not arrived, and the due date is 7 days away or less
 - Status: badge warning "Due {in}"
 - Banner: info "You asked for proof of identity on {asked}. Waiting does not move the due date."
@@ -139,52 +109,91 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Rules: BR-01, BR-02, BR-05, BR-06
 - Goals: G-01
 
+## Dialogs
+
+A dialog opens over a state, from one of its buttons, and leaves that state as it is: its status and banner stay. It shows only over the states it lists. When time moves the request to a state it does not list, the dialog closes and nothing it asked for is done.
+
+### DL-01 Extend
+- Opens from: Extend
+- Over: ST-01, ST-02, ST-05, ST-08
+- Title: "Extend the due date by two months"
+- Asks: "Reason, for the letter to the person"
+- Actions: Extend (primary, disabled until written), Cancel (tertiary)
+- Closes when: the due date passes. Nothing is extended.
+- Rules: BR-02
+- Goals: G-01
+
+### DL-02 Ask for proof of identity
+- Opens from: Ask for proof of identity
+- Over: ST-01, ST-02, ST-04
+- Title: "Ask for proof of identity"
+- Asks: "Your doubt about who wrote"
+- Actions: Ask (primary, disabled until written), Cancel (tertiary)
+- Closes when: the due date passes. Nothing is asked.
+- Rules: BR-05
+- Goals: G-01
+
+### DL-03 Mark as answered
+- Opens from: Mark as answered
+- Over: ST-01, ST-02, ST-03, ST-04, ST-05, ST-08, ST-09
+- Title: "Mark as answered"
+- Asks: "Date the answer was sent"
+- Actions: Mark as answered (primary, disabled until written), Cancel (tertiary)
+- Closes when: the request is answered in the meantime, by someone else or in another tab. While it is not answered, answering is always possible.
+- Rules: BR-04
+- Goals: G-03
+
 ## Evals
 
-Each row is one eval and one test. Viewer, Received, Sent on, Extended on, Proof asked on, Proof received on, Answered on, Dialog and Today are the facts. Due, State and Actions are what the screen must show. A dash means none.
+Each row is one eval and one test. Viewer, Received, Sent on, Extended on, Proof asked on, Proof received on, Answered on, Dialog (the one the lead opened), Written (whether the lead has written in it) and Today are the facts. Due, State and Actions are what the screen must show: the buttons of the dialog when it shows, else those of the state. A dash means none.
 
-| Eval | Viewer | Received | Sent on | Extended on | Proof asked on | Proof received on | Answered on | Dialog | Today | Due | State | Actions |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| E-01 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | 2026-11-10 | 2026-12-03 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
-| E-02 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | 2026-11-28 | 2026-12-03 | ST-02 | Mark as answered, Extend, Ask for proof of identity |
-| E-03 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | 2026-12-04 | 2026-12-03 | ST-03 | Mark as answered |
-| E-04 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | - | - | - | - | 2026-11-25 | 2027-02-03 | ST-04 | Mark as answered, Ask for proof of identity |
-| E-05 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | - | 2026-11-20 | 2026-12-03 | ST-05 | Proof received, Extend, Mark as answered |
-| E-06 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | 2026-11-28 | - | 2026-12-10 | 2026-12-03 | ST-06 | - |
-| E-07 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | extend | 2026-11-20 | 2026-12-03 | ST-07 | Extend, Cancel |
-| E-08 | R-02 | 2026-11-03 | 2026-11-06 | - | - | - | - | - | 2026-11-20 | 2026-12-03 | ST-08 | - |
-| E-09 | R-01 | 2026-01-31 | 2026-01-31 | - | - | - | - | - | 2026-02-10 | 2026-02-28 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
-| E-10 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | - | - | - | - | 2027-01-30 | 2027-02-03 | ST-02 | Mark as answered, Ask for proof of identity |
-| E-11 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | - | - | - | - | 2027-02-05 | 2027-02-03 | ST-03 | Mark as answered |
-| E-12 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | - | 2026-12-05 | 2026-12-03 | ST-10 | Proof received, Mark as answered |
-| E-13 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | 2026-12-03 | 2026-12-03 | ST-02 | Mark as answered, Extend, Ask for proof of identity |
-| E-14 | R-02 | 2026-11-03 | 2026-11-03 | - | - | - | 2026-11-28 | - | 2026-12-10 | 2026-12-03 | ST-06 | - |
-| E-16 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | - | 2026-11-28 | 2026-12-03 | ST-09 | Proof received, Extend, Mark as answered |
-| E-17 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | 2026-11-25 | - | - | - | 2026-12-01 | 2027-02-03 | ST-05 | Proof received, Mark as answered |
-| E-18 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | 2026-11-15 | - | - | 2026-11-20 | 2026-12-03 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
-| E-19 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | extend | 2026-12-04 | 2026-12-03 | ST-03 | Mark as answered |
-| E-20 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | extend | 2026-11-28 | 2026-12-03 | ST-07 | Extend, Cancel |
-| E-21 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | extend | 2026-11-20 | 2026-12-03 | ST-07 | Extend, Cancel |
-| E-22 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | 2026-12-05 | - | 2026-12-10 | 2026-12-03 | ST-11 | - |
-| E-23 | R-02 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | 2026-12-05 | 2026-12-03 | ST-08 | - |
-| E-24 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | answer | 2026-12-05 | 2026-12-03 | ST-12 | Mark as answered, Cancel |
-| E-25 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | answer | 2026-11-20 | 2026-12-03 | ST-12 | Mark as answered, Cancel |
-| E-26 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | proof | 2026-11-20 | 2026-12-03 | ST-13 | Ask, Cancel |
-| E-27 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | 2026-11-26 | 2026-12-03 | ST-02 | Mark as answered, Extend, Ask for proof of identity |
-| E-28 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | 2026-11-25 | 2026-12-03 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
-| E-29 | R-01 | 2026-01-31 | 2026-01-31 | 2026-02-10 | - | - | - | - | 2026-02-20 | 2026-04-30 | ST-04 | Mark as answered, Ask for proof of identity |
-| E-30 | R-01 | 2028-01-31 | 2028-01-31 | - | - | - | - | - | 2028-02-10 | 2028-02-29 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
+| Eval | Viewer | Received | Sent on | Extended on | Proof asked on | Proof received on | Answered on | Dialog | Written | Today | Due | State | Actions |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| E-01 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | - | 2026-11-10 | 2026-12-03 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
+| E-02 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | - | 2026-11-28 | 2026-12-03 | ST-02 | Mark as answered, Extend, Ask for proof of identity |
+| E-03 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | - | 2026-12-04 | 2026-12-03 | ST-03 | Mark as answered |
+| E-04 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | - | - | - | - | - | 2026-11-25 | 2027-02-03 | ST-04 | Mark as answered, Ask for proof of identity |
+| E-05 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | - | - | 2026-11-20 | 2026-12-03 | ST-05 | Proof received, Extend, Mark as answered |
+| E-06 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | 2026-11-28 | - | - | 2026-12-10 | 2026-12-03 | ST-06 | - |
+| E-07 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | DL-01 | - | 2026-11-20 | 2026-12-03 | ST-01 | Extend, Cancel |
+| E-08 | R-02 | 2026-11-03 | 2026-11-06 | - | - | - | - | - | - | 2026-11-20 | 2026-12-03 | ST-07 | - |
+| E-09 | R-01 | 2026-01-31 | 2026-01-31 | - | - | - | - | - | - | 2026-02-10 | 2026-02-28 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
+| E-10 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | - | - | - | - | - | 2027-01-30 | 2027-02-03 | ST-02 | Mark as answered, Ask for proof of identity |
+| E-11 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | - | - | - | - | - | 2027-02-05 | 2027-02-03 | ST-03 | Mark as answered |
+| E-12 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | - | - | 2026-12-05 | 2026-12-03 | ST-09 | Proof received, Mark as answered |
+| E-13 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | - | 2026-12-03 | 2026-12-03 | ST-02 | Mark as answered, Extend, Ask for proof of identity |
+| E-14 | R-02 | 2026-11-03 | 2026-11-03 | - | - | - | 2026-11-28 | - | - | 2026-12-10 | 2026-12-03 | ST-07 | - |
+| E-16 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | - | - | 2026-11-28 | 2026-12-03 | ST-08 | Proof received, Extend, Mark as answered |
+| E-17 | R-01 | 2026-11-03 | 2026-11-03 | 2026-11-20 | 2026-11-25 | - | - | - | - | 2026-12-01 | 2027-02-03 | ST-05 | Proof received, Mark as answered |
+| E-18 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | 2026-11-15 | - | - | - | 2026-11-20 | 2026-12-03 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
+| E-19 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | DL-01 | - | 2026-12-04 | 2026-12-03 | ST-03 | Mark as answered |
+| E-20 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | DL-01 | - | 2026-11-28 | 2026-12-03 | ST-02 | Extend, Cancel |
+| E-21 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | DL-01 | - | 2026-11-28 | 2026-12-03 | ST-08 | Extend, Cancel |
+| E-22 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | 2026-12-05 | - | - | 2026-12-10 | 2026-12-03 | ST-10 | - |
+| E-23 | R-02 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | - | 2026-12-05 | 2026-12-03 | ST-07 | - |
+| E-24 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | DL-03 | - | 2026-12-05 | 2026-12-03 | ST-03 | Mark as answered, Cancel |
+| E-25 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | - | - | DL-03 | - | 2026-12-05 | 2026-12-03 | ST-09 | Mark as answered, Cancel |
+| E-26 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | DL-02 | - | 2026-11-20 | 2026-12-03 | ST-01 | Ask, Cancel |
+| E-27 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | - | 2026-11-26 | 2026-12-03 | ST-02 | Mark as answered, Extend, Ask for proof of identity |
+| E-28 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | - | - | 2026-11-25 | 2026-12-03 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
+| E-29 | R-01 | 2026-01-31 | 2026-01-31 | 2026-02-10 | - | - | - | - | - | 2026-02-20 | 2026-04-30 | ST-04 | Mark as answered, Ask for proof of identity |
+| E-30 | R-01 | 2028-01-31 | 2028-01-31 | - | - | - | - | - | - | 2028-02-10 | 2028-02-29 | ST-01 | Mark as answered, Extend, Ask for proof of identity |
+| E-35 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | DL-01 | yes | 2026-11-20 | 2026-12-03 | ST-01 | Extend, Cancel |
+| E-36 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | DL-02 | - | 2026-12-04 | 2026-12-03 | ST-03 | Mark as answered |
+| E-37 | R-01 | 2026-11-03 | 2026-11-03 | - | 2026-11-12 | 2026-12-05 | - | - | - | 2026-12-06 | 2026-12-03 | ST-03 | Mark as answered |
+| E-38 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | - | DL-03 | yes | 2026-11-20 | 2026-12-03 | ST-01 | Mark as answered, Cancel |
+| E-39 | R-01 | 2026-11-03 | 2026-11-03 | - | - | - | 2026-11-20 | DL-03 | yes | 2026-11-20 | 2026-12-03 | ST-06 | - |
 
 Where two states are true at once:
 
 - E-12: waiting for proof, and overdue. Overdue wins, and the screen still says proof was asked for and can record that it arrived.
 - E-16: waiting for proof, and due soon. The countdown shows and Extend stays (D-07).
 - E-17: extended, then waiting for proof. Extend is gone: a request is extended once.
-- E-19: the Extend dialog open when the due date passes. Overdue wins and the dialog closes: Extend is refused once the due date has passed (BR-02).
-- E-20 and E-21: the Extend dialog open on a request due soon, or waiting for proof. The dialog wins and its badge keeps the countdown.
 - E-22: answered after the due date. The screen says how late (D-08).
-- E-23: a support agent on an overdue request. The agent sees who has it, not that it is overdue (BR-08).
-- E-24 and E-25: the Mark as answered dialog on an overdue request, or one waiting for proof. The dialog wins: answering is always possible.
+- E-14 and E-23: a support agent on an answered or an overdue request. The agent sees who has it, and nothing else about it (BR-08).
+- E-37: proof that arrives after the due date. The request stays overdue.
+
+Dialogs over a state: E-07, E-20, E-21, E-24, E-25 and E-26 show a dialog over the state, which keeps its status and banner. E-19 and E-36 show Extend and Ask for proof closing when the due date passes. E-39 shows Mark as answered closing when someone else has answered the request in the meantime. E-35 and E-38 show the main button once something is written.
 
 Dates at the edges: E-09 is the month-end eval (Q-02); E-29 extends it (Q-03); E-30 is a leap year. E-13 is the due date itself: still due, not yet overdue. E-27 and E-28 are 7 and 8 days before the due date: the first is due soon, the second is not. E-18 shows the screen once the proof has arrived. E-08 is sent on a later day than it was received: the due date still counts from the day it reached the shop (BR-01).
 
@@ -193,5 +202,7 @@ Dates at the edges: E-09 is the month-end eval (Q-02); E-29 extends it (Q-03); E
 What this screen does not show yet. Each is a gap someone decided to leave, not one nobody saw.
 
 - Who did each thing. History lists dates, not people (G-03 is met for dates only).
-- Correcting or reopening an answered request.
+- When an answer date was entered, and correcting or reopening an answered request.
+- That a request was answered while proof was still awaited (Q-05).
 - Whether the person was told about the extension. The screen keeps the reason, not the date the letter went out (Q-04).
+- A refused date in the Mark as answered dialog, with its words. The flow eval E-31 says what must happen.

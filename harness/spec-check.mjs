@@ -3,7 +3,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { readdirSync } from 'node:fs';
-import { dsDir, featureHash, list, PRODUCT, readSpec, root } from './spec.mjs';
+import { dialogShown, dsDir, featureHash, list, PRODUCT, readSpec, root } from './spec.mjs';
 
 const ds = join(dsDir, 'contracts');
 const spec = readSpec();
@@ -20,9 +20,10 @@ for (const [prefix, rows] of Object.entries(kinds)) {
     known.add(r.ID);
   }
 }
-for (const s of spec.screens) for (const st of s.states) {
-  if (known.has(`${s.name}:${st.id}`)) fail('SPEC-01', `${st.id} is used twice`, s.file);
-  known.add(`${s.name}:${st.id}`);
+for (const s of spec.screens) for (const x of [...s.states, ...s.dialogs]) {
+  if (!/^(ST|DL)-\d{2}$/.test(x.id)) fail('SPEC-01', `"${x.id}" is not ST-NN or DL-NN`, s.file);
+  if (known.has(`${s.name}:${x.id}`)) fail('SPEC-01', `${x.id} is used twice`, s.file);
+  known.add(`${s.name}:${x.id}`);
 }
 const evalIds = new Set();
 for (const e of [...spec.screens.flatMap(s => s.evals), ...spec.flows.flatMap(f => f.evals)]) {
@@ -38,7 +39,8 @@ for (const r of spec.rules) {
 }
 for (const s of spec.screens) {
   for (const id of [...s.roles, ...s.goals]) if (!known.has(id)) fail('SPEC-02', `${id} does not exist`, s.file);
-  for (const st of s.states) for (const id of [...st.rules, ...st.goals]) if (!known.has(id)) fail('SPEC-02', `${st.id} cites ${id}, which does not exist`, s.file);
+  for (const st of [...s.states, ...s.dialogs]) for (const id of [...st.rules, ...st.goals]) if (!known.has(id)) fail('SPEC-02', `${st.id} cites ${id}, which does not exist`, s.file);
+  for (const d of s.dialogs) for (const id of d.over) if (!s.states.some(st => st.id === id)) fail('SPEC-02', `${d.id} opens over ${id}, which is not a state`, s.file);
 }
 
 // SPEC-10: every decision names the flows or screens it applies to, and they exist; every role links a persona sheet that exists.
@@ -54,12 +56,12 @@ for (const r of spec.roles) {
   else if (!existsSync(join(root, 'spec', sheet))) fail('SPEC-10', `${r.ID} links ${sheet}, which does not exist`, 'spec/roles.md');
 }
 
-// SPEC-03: every rule is applied by a state of each screen it names.
+// SPEC-03: every rule is applied by a state or a dialog of each screen it names.
 for (const r of spec.rules) {
   for (const where of r.Where.split(',').map(x => x.trim()).filter(Boolean)) {
     const s = spec.screens.find(x => x.name === where);
     if (!s) { fail('SPEC-03', `${r.ID} names the screen "${where}", which has no file`, 'spec/rules.md'); continue; }
-    if (!s.states.some(st => st.rules.includes(r.ID))) fail('SPEC-03', `${r.ID} is applied by no state of ${where}`, s.file);
+    if (![...s.states, ...s.dialogs].some(st => st.rules.includes(r.ID))) fail('SPEC-03', `${r.ID} is applied by no state or dialog of ${where}`, s.file);
   }
 }
 
@@ -79,8 +81,11 @@ for (const s of spec.screens) {
   for (const st of s.states) {
     if (st.status && !badge.has(st.status.tone)) fail('SPEC-05', `${st.id}: badge "${st.status.tone}" is not a badge variant`, s.file);
     if (st.banner && !banner.has(st.banner.tone)) fail('SPEC-05', `${st.id}: banner "${st.banner.tone}" is not a banner variant`, s.file);
-    if (st.dialog && !existsSync(contract('dialog'))) fail('SPEC-05', `${st.id}: the design system has no dialog`, s.file);
     for (const a of st.actions) if (!button.has(a.variant)) fail('SPEC-05', `${st.id}: button "${a.variant}" is not a button variant`, s.file);
+  }
+  for (const d of s.dialogs) {
+    if (!existsSync(contract('dialog'))) fail('SPEC-05', `${d.id}: the design system has no dialog`, s.file);
+    for (const a of d.actions) if (!button.has(a.variant)) fail('SPEC-05', `${d.id}: button "${a.variant}" is not a button variant`, s.file);
   }
 }
 
@@ -88,15 +93,27 @@ for (const s of spec.screens) {
 // design system owner decides, as in ai-ready-design-system's triage.
 const triage = [];
 const states = name => readFileSync(contract(name), 'utf8').toLowerCase();
-for (const s of spec.screens) for (const st of s.states) for (const a of st.actions) {
-  if (a.disabled && !states('button').includes('disabled')) triage.push(`SPEC-07 ${st.id} ("${a.label}" is disabled; the button contract has no disabled state)  ← ${s.file}, contracts/button.md`);
+for (const s of spec.screens) for (const st of [...s.states, ...s.dialogs]) for (const a of st.actions) {
+  if ((a.disabled || a.untilWritten) && !states('button').includes('disabled')) triage.push(`SPEC-07 ${st.id} ("${a.label}" is disabled; the button contract has no disabled state)  ← ${s.file}, contracts/button.md`);
 }
 
-// SPEC-06: every state has at least one eval, and every eval names a state that exists.
+// SPEC-06: every state and every dialog has at least one eval, and every eval names a state and a dialog that exist.
+// A dialog needs an eval that shows it, and one where time closes it: a request it no longer opens over.
 for (const s of spec.screens) {
   const ids = new Set(s.states.map(st => st.id));
   for (const st of s.states) if (!s.evals.some(e => e.State === st.id)) fail('SPEC-06', `${st.id} has no eval`, s.file);
   for (const e of s.evals) if (!ids.has(e.State)) fail('SPEC-06', `${e.Eval} names ${e.State}, which is not a state`, s.file);
+  for (const e of s.evals) if (list(e.Dialog).length && !s.dialogs.some(d => d.id === e.Dialog)) fail('SPEC-06', `${e.Eval} opens ${e.Dialog}, which is not a dialog`, s.file);
+  for (const d of s.dialogs) {
+    if (!s.evals.some(e => dialogShown(s, e) === d)) fail('SPEC-06', `${d.id} has no eval that shows it`, s.file);
+    if (!s.evals.some(e => e.Dialog === d.id && !dialogShown(s, e))) fail('SPEC-06', `${d.id} has no eval where it closes, on a state it does not open over`, s.file);
+  }
+}
+
+// SPEC-15: a dialog opens from a button that every state under it offers.
+for (const s of spec.screens) for (const d of s.dialogs) for (const id of d.over) {
+  const st = s.states.find(x => x.id === id);
+  if (st && !st.actions.some(a => a.label === d.opensFrom)) fail('SPEC-15', `${d.id} opens from "${d.opensFrom}", which ${id} does not offer`, s.file);
 }
 
 // SPEC-08: every flow starts from a trigger and ends; every step is reached, goes somewhere that exists,
@@ -117,6 +134,7 @@ for (const f of spec.flows) {
     const s = spec.screens.find(y => y.name === x.screen);
     if (!s) { fail('SPEC-08', `${x.id} lands on "${x.screen}", which has no file`, f.file); return; }
     for (const st of x.states) if (!s.states.some(y => y.id === st)) fail('SPEC-08', `${x.id} lands on ${st}, which ${x.screen} does not have`, f.file);
+    if (x.dialog && !s.dialogs.some(y => y.id === x.dialog)) fail('SPEC-08', `${x.id} opens ${x.dialog}, which ${x.screen} does not have`, f.file);
   });
 }
 
@@ -124,6 +142,9 @@ for (const f of spec.flows) {
 // a step is missing, or the state should not exist.
 for (const s of spec.screens) for (const st of s.states) {
   if (!spec.flows.some(f => f.steps.some(x => x.screen === s.name && x.states.includes(st.id)))) fail('SPEC-09', `${st.id} is reached by no step of a flow`, s.file);
+}
+for (const s of spec.screens) for (const d of s.dialogs) {
+  if (!spec.flows.some(f => f.steps.some(x => x.screen === s.name && x.dialog === d.id))) fail('SPEC-09', `${d.id} is opened by no step of a flow`, s.file);
 }
 
 // SPEC-11: nothing cites a replaced decision. Each replaced decision names the decision that replaces it.
@@ -153,7 +174,8 @@ for (const q of spec.questions) {
 // SPEC-13: every business rule has at least one eval: a screen eval on a state that applies it, or a flow eval
 // for what no screen shows. A rule no eval tests is a hole the checks cannot see.
 for (const r of spec.rules) {
-  const onScreen = spec.screens.some(s => s.states.some(st => st.rules.includes(r.ID) && s.evals.some(e => e.State === st.id)));
+  const onScreen = spec.screens.some(s => s.states.some(st => st.rules.includes(r.ID) && s.evals.some(e => e.State === st.id))
+    || s.dialogs.some(d => d.rules.includes(r.ID) && s.evals.some(e => dialogShown(s, e) === d)));
   const inFlow = spec.flows.some(f => f.evals.some(e => e.rules.includes(r.ID)));
   if (!onScreen && !inFlow) fail('SPEC-13', `${r.ID} has no eval; add an eval on a state that applies it, or a flow eval`, 'spec/rules.md');
 }
@@ -176,9 +198,9 @@ const today = new Date().toISOString().slice(0, 10);
 const stale = spec.sources.filter(r => /to confirm/i.test(r.Mark ?? '') && r['Check again on'] && r['Check again on'] < today)
   .map(r => `${r.ID} is still "to confirm", and was due to be checked again on ${r['Check again on']}  ← ${r.file}`);
 
-const counts = spec.screens.map(s => `${s.name}: ${s.states.length} states, ${s.evals.length} evals`).join('; ');
+const counts = spec.screens.map(s => `${s.name}: ${s.states.length} states, ${s.dialogs.length} dialogs, ${s.evals.length} evals`).join('; ');
 console.log(`Spec: ${spec.flows.length} flow, ${spec.rules.length} rules, ${spec.goals.length} goals, ${spec.decisions.length} decisions, ${spec.questions.length} open questions, ${spec.flows.reduce((n, f) => n + f.evals.length, 0)} flow evals. ${counts}.`);
 if (stale.length) console.log(`External rules to read again:\n${stale.join('\n')}`);
 if (triage.length) console.log(`To triage, for the design system owner:\n${[...new Set(triage)].join('\n')}`);
 if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}`); process.exit(1); }
-console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-14');
+console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-15');

@@ -3,7 +3,7 @@
 // Usage: npm run handoff
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { list, readSpec, root } from './spec.mjs';
+import { dialogShown, list, readSpec, root } from './spec.mjs';
 
 const spec = readSpec();
 const byId = new Map([...spec.goals, ...spec.roles, ...spec.rules, ...spec.decisions, ...spec.questions, ...spec.sources].map(r => [r.ID, r]));
@@ -13,11 +13,12 @@ const day = d => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: '
 const toConfirm = ids => [...new Set(ids.flatMap(id => (byId.get(id)?.Sources ?? '').split(',').map(x => x.trim())))]
   .filter(id => /to confirm/i.test(byId.get(id)?.Mark ?? '')).sort();
 // The facts of an eval row: every column except the ID, who looks, the day, an open dialog and what the screen must show.
-const notFacts = new Set(['Eval', 'Viewer', 'Today', 'Dialog', 'Due', 'State', 'Actions']);
+const notFacts = new Set(['Eval', 'Viewer', 'Today', 'Dialog', 'Written', 'Due', 'State', 'Actions']);
 
-function given(row) {
+function given(row, screen) {
   const parts = Object.keys(row).filter(f => !notFacts.has(f)).filter(f => row[f] && row[f] !== '-').map(f => `${f.toLowerCase()} ${day(row[f])}`);
-  const dialog = row.Dialog && row.Dialog !== '-' ? `, with the ${row.Dialog} dialog open and nothing written in it yet` : '';
+  const d = screen.dialogs.find(x => x.id === row.Dialog);
+  const dialog = d ? `, with the ${d.id} ${d.name} dialog opened and ${(row.Written ?? '-') !== '-' ? 'something written in it' : 'nothing written in it yet'}` : '';
   return `a request ${parts.join(', ')}, opened by the ${roleName(row.Viewer).toLowerCase()} on ${day(row.Today)}${dialog}`;
 }
 
@@ -27,7 +28,7 @@ const node = id => id.replace('-', '');
 function mermaid(f) {
   const out = ['```mermaid', 'flowchart TD', `  T(["${label(f.trigger)}"])`, `  T --> ${node(f.steps[0].id)}`];
   for (const x of f.steps) {
-    const text = `${x.id} ${label(x.what)}${x.states.length ? `<br/>${x.states.join(', ')}` : ''}`;
+    const text = `${x.id} ${label(x.what)}${x.states.length || x.dialog ? `<br/>${[x.dialog, ...x.states].filter(Boolean).join(', ')}` : ''}`;
     out.push(x.screen ? `  ${node(x.id)}["${text}"]` : `  ${node(x.id)}{"${text}"}`);
   }
   for (const x of f.steps) {
@@ -46,7 +47,7 @@ function mermaid(f) {
 mkdirSync(join(root, 'handoff'), { recursive: true });
 for (const s of spec.screens) {
   const flowsHere = spec.flows.filter(f => f.steps.some(x => x.screen === s.name));
-  const rules = [...new Set([...s.states.flatMap(st => st.rules), ...flowsHere.flatMap(f => f.evals.flatMap(e => e.rules))])].sort().map(id => byId.get(id));
+  const rules = [...new Set([...s.states.flatMap(st => st.rules), ...s.dialogs.flatMap(d => d.rules), ...flowsHere.flatMap(f => f.evals.flatMap(e => e.rules))])].sort().map(id => byId.get(id));
   const cited = new Set(rules.flatMap(r => r.Sources.split(',').map(x => x.trim())));
   const lines = [
     `# Handoff: ${s.title}`,
@@ -85,6 +86,14 @@ for (const s of spec.screens) {
     '|---|---|---|---|---|',
     ...s.states.map(st => `| ${st.id} | ${st.name}${st.notBuilt ? ' (not built yet)' : ''} | ${st.when} | ${st.status ? `${st.status.tone}: "${st.status.text}"` : 'none'} | ${st.actions.length ? st.actions.map(a => `${a.label} (${a.variant}${a.disabled ? ', disabled' : ''})${a.condition ? ` ${a.condition}` : ''}`).join(', ') : 'none'} |`),
     '',
+    '## Dialogs',
+    '',
+    'A dialog opens over a state, which keeps its status and banner. It shows only over the states it lists, and closes when the request moves to another.',
+    '',
+    '| ID | Dialog | Opens from | Over | Asks | Actions | Closes when |',
+    '|---|---|---|---|---|---|---|',
+    ...s.dialogs.map(d => `| ${d.id} | ${d.title} | ${d.opensFrom} | ${d.over.join(', ')} | ${d.asks.join('; ')} | ${d.actions.map(a => `${a.label} (${a.variant}${a.untilWritten ? ', disabled until written' : a.disabled ? ', disabled' : ''})`).join(', ')} | ${d.closes} |`),
+    '',
     '## Acceptance tests',
     '',
     `One per eval in the spec. \`npm run behaviour\` runs the screen's evals against the built screen.`,
@@ -93,7 +102,10 @@ for (const s of spec.screens) {
       const st = s.states.find(x => x.id === e.State);
       const acts = list(e.Actions);
       const unsure = toConfirm(st?.rules ?? []);
-      return [`- **${e.Eval}.** Given ${given(e)}. Then the due date is ${day(e.Due)}, the screen is in ${e.State} ${st?.name ?? ''}, and it offers ${acts.length ? acts.join(', ') : 'no action'}.${unsure.length ? ` Rests on external rules still to confirm: ${unsure.join(', ')}.` : ''}`];
+      const d = dialogShown(s, e);
+      const opened = s.dialogs.find(x => x.id === e.Dialog);
+      const shown = d ? `, the ${d.id} dialog shows over it` : opened ? `, the ${opened.id} dialog has closed` : '';
+      return [`- **${e.Eval}.** Given ${given(e, s)}. Then the due date is ${day(e.Due)}, the screen is in ${e.State} ${st?.name ?? ''}${shown}, and it offers ${acts.length ? acts.join(', ') : 'no action'}.${unsure.length ? ` Rests on external rules still to confirm: ${unsure.join(', ')}.` : ''}`];
     }),
     ...spec.flows.filter(f => f.steps.some(x => x.screen === s.name) && f.evals.length).flatMap(f => [
       '',
