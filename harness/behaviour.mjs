@@ -12,19 +12,8 @@ import { renderExamples, out } from './render.mjs';
 const { chromium } = createRequire(import.meta.url)('playwright');
 const ds = dsPath;
 
-const day = d => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
-const daysTo = (from, to) => Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
-
-/** Fills the {words} of a screen from an eval row. */
-function fill(text, row) {
-  const left = daysTo(row.Today, row.Due);
-  const words = {
-    due: day(row.Due), received: day(row.Received),
-    asked: row['Proof asked on'] !== '-' ? day(row['Proof asked on']) : '', answered: row['Answered on'] !== '-' ? day(row['Answered on']) : '',
-    in: left === 0 ? 'today' : left === 1 ? 'tomorrow' : `in ${left} days`,
-  };
-  return text.replace(/\{([a-z]+)\}/g, (m, w) => words[w] ?? m);
-}
+/** Fills the {words} of a screen's text with the words the screen module gives for one eval row. */
+const fill = (text, words) => text.replace(/\{([a-z]+)\}/g, (m, w) => words?.[w] ?? m);
 
 function readPage() {
   const text = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : null;
@@ -73,9 +62,10 @@ export async function checkBehaviour() {
     const live = new Set([...spec.rules.map(r => r.ID), ...spec.decisions.map(d => d.ID)]);
     for (const id of new Set(both.match(/\b(?:BR|D)-\d{2}\b/g) ?? [])) if (!live.has(id)) fail('BEH-09', 'code', `the code names ${id}, which is not a live rule or decision in the spec`);
 
-    for (const { row, file, logic } of pages) {
+    for (const { row, file, logic, words } of pages) {
       checked++;
       const ex = row.Eval;
+      if (!words) { fail('BEH-06', ex, `screens/${screen.name}.tsx exports no words(), so the spec's {words} cannot be filled`); continue; }
       const want = screen.states.find(s => s.id === row.State);
       // BEH-07: the rules, before anything is drawn: due date, state and actions from the code alone.
       if (logic.due !== row.Due) fail('BEH-07', ex, `due date ${logic.due}, the spec says ${row.Due}`);
@@ -91,12 +81,12 @@ export async function checkBehaviour() {
       if (got.template !== screen.template) fail('BEH-02', ex, `template ${got.template}, the spec says ${screen.template}`);
       // BEH-03: the status.
       if (want.status) {
-        const text = fill(want.status.text, row);
+        const text = fill(want.status.text, words);
         if (!got.badge || got.badge.tone !== want.status.tone || got.badge.text !== text) fail('BEH-03', ex, `status ${got.badge ? `${got.badge.tone} "${got.badge.text}"` : 'none'}, the spec says ${want.status.tone} "${text}"`);
       } else if (got.badge) fail('BEH-03', ex, `status "${got.badge.text}", the spec says none`);
       // BEH-04: the banner.
       if (want.banner) {
-        const text = fill(want.banner.text, row);
+        const text = fill(want.banner.text, words);
         if (!got.banner || got.banner.tone !== want.banner.tone || got.banner.text !== text) fail('BEH-04', ex, `banner ${got.banner ? `${got.banner.tone} "${got.banner.text}"` : 'none'}, the spec says ${want.banner.tone} "${text}"`);
       } else if (got.banner) fail('BEH-04', ex, `banner "${got.banner.text}", the spec says none`);
       // BEH-05: the dialog and the buttons, in order, each with its variant, disabled where the spec says.
@@ -108,7 +98,7 @@ export async function checkBehaviour() {
         if (a && (a.variant !== b.variant || a.disabled !== b.disabled)) fail('BEH-05', ex, `"${b.label}" is ${b.variant}${b.disabled ? ', disabled' : ''}, the spec says ${a.variant}${a.disabled ? ', disabled' : ''}`);
       }
       // BEH-06: the words that must show, and the ones that never may.
-      for (const s of want.says) if (!got.body.includes(fill(s, row))) fail('BEH-06', ex, `"${fill(s, row)}" is missing`);
+      for (const s of want.says) if (!got.body.includes(fill(s, words))) fail('BEH-06', ex, `"${fill(s, words)}" is missing`);
       for (const n of screen.never) if (got.body.toLowerCase().includes(n.toLowerCase())) fail('BEH-06', ex, `shows "${n}"`);
     }
   }

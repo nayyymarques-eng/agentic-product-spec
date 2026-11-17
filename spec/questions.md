@@ -8,3 +8,7 @@ What nobody has answered yet. The spec says what the product does in the meantim
 |---|---|---|---|---|
 | Q-01 | Does the month stop while the shop waits for proof of identity (PRIV-07)? | A privacy lawyer | The due date does not move (D-05) | answer-a-request, request |
 | Q-02 | How is "one month" counted when the next month has no such day, such as a request received on 31 January? | A privacy lawyer | The due date is the last day of the next month | answer-a-request, request |
+| Q-03 | Once extended, is the due date three months after the request reached the shop, or two months after the first due date? They differ at month end: a request received on 31 January is due on 30 April or 28 April. | A privacy lawyer | Three months after the request reached the shop | answer-a-request, request |
+| Q-04 | Must the person be told about the extension within the first month, and can a request be extended on its due date? | A privacy lawyer | Extend works up to and including the due date. The product records the reason, not the day the letter went out | answer-a-request, request |
+| Q-05 | May a request be answered while proof of identity is still awaited? | A privacy lawyer | Mark as answered stays, as the least prominent action | answer-a-request, request |
+| Q-06 | What must the shop record and tell the person when it refuses a request or does not act on it (PRIV-05, PRIV-06)? | A privacy lawyer | Not covered by this feature: a refusal cannot be recorded | answer-a-request |

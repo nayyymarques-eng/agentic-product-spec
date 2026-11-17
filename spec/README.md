@@ -68,13 +68,21 @@ A screen lists its states in order, and when two could apply, the first one wins
 
 - **Time passes during another state**: the due date passes while the request waits for proof. A state that time brings in keeps the limits of the state it interrupts.
 - **Who is looking**: a role with a narrower view of a state that is also late, or also blocked.
-- **A dialog open over a state**: what the state underneath still shows.
-- **A final state against time**: an answer sent after the due date.
+- **A dialog open over a state**: what the state underneath still shows, and whether the dialog closes when time ends it. An action that needs something written, such as a reason, a doubt or a date, gets a dialog state of its own, with its button disabled until it is written.
+- **A final state against time**: an answer sent after the due date. A final state keeps what happened before it, such as how late it was.
 - **Events out of order**: proof that arrives after the due date; an action tried after it is no longer allowed.
 - **Undo**: the state a request goes back to.
 - **Two people at once**: two actions on the same thing.
 
 The spec review lists every pair it finds with no eval.
+
+## Dates and the words for them
+
+Each date has one name, and one day it is. Two days that can differ, such as the day a request reached the shop and the day it was sent on, get two names and two facts. A date shows its year when it is not the current one, and the glossary says which time zone "today" is in. Boundaries get their own evals: the day a period starts and the day before, and a date at the end of a month.
+
+## What a feature leaves out
+
+A flow file and a screen file end with `## Not covered`: what the feature leaves out on purpose, each in one line, with the open question that holds it when there is one. A gap someone decided to leave is a decision; a gap nobody saw is a finding. The spec review reads the list, and does not report what is on it.
 
 ## How a flow is written
 
@@ -100,7 +108,7 @@ Then a table, one row per step:
 An example row, from `flows/answer-a-request.md`:
 
 ```
-| F-04 | R-01 | Asks for proof of identity, and waits | request | ST-05 | F-05 when the proof arrives, or F-08 when the due date passes |
+| F-04 | R-01 | Writes the doubt, asks for proof of identity, and waits | request | ST-13, ST-05, ST-09 | F-05 when the proof arrives, F-06 to extend while waiting, or F-08 when the due date passes |
 ```
 
 The spec check reads the flow both ways: every step must land on a state that exists, and every state must be reached by a step. A state no step reaches means a step is missing, or the state should not exist.
@@ -131,9 +139,9 @@ An example, from `screens/request.md`:
 
 ## States
 ### ST-03 Overdue
-- When: not answered, and today is after the due date
-- Status: badge critical "Overdue since {due}"
-- Banner: critical "This request is past its legal due date. ..."
+- When: not answered, and today is after the due date. Any open dialog closes ...
+- Status: badge critical "Overdue by {overdue}"
+- Banner: critical "This request is past its due date. ..."
 - Actions: Mark as answered (primary)
 - Rules: BR-03, BR-02
 - Goals: G-01, G-02

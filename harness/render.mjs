@@ -7,7 +7,8 @@ import { root } from './spec.mjs';
 
 export const out = join(root, '.behaviour');
 
-/** Builds a screen's module, renders one HTML page per eval, and returns the pages. */
+/** Builds a screen's module, renders one HTML page per eval, and returns the pages. The module exports Screen,
+ * fromExample (an eval row to props), behaviour (what the code decides) and words (the {words} of the spec). */
 export async function renderExamples(screen, dir, cssBase) {
   const entry = join(root, 'screens', `${screen.name}.tsx`);
   if (screen.notBuilt) return [];
@@ -24,7 +25,7 @@ export async function renderExamples(screen, dir, cssBase) {
     const body = renderToStaticMarkup(createElement(mod.Screen, props));
     const file = join(dir, `${screen.name}-${row.Eval}.html`);
     writeFileSync(file, `<!doctype html>\n<html lang="en-GB">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${screen.title}, ${row.Eval}</title>\n<link rel="stylesheet" href="${cssBase}/tokens.css">\n<link rel="stylesheet" href="${cssBase}/components.css">\n</head>\n<body>\n${body}\n</body>\n</html>\n`);
-    return { row, file, logic: mod.behaviour(props) };
+    return { row, file, logic: mod.behaviour(props), words: mod.words ? mod.words(props) : null };
   });
 }
 

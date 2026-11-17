@@ -12,11 +12,12 @@ const day = d => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: '
 // The external rules still "to confirm" behind a list of business rules: a test built on them may change.
 const toConfirm = ids => [...new Set(ids.flatMap(id => (byId.get(id)?.Sources ?? '').split(',').map(x => x.trim())))]
   .filter(id => /to confirm/i.test(byId.get(id)?.Mark ?? '')).sort();
-const facts = ['Received', 'Extended on', 'Proof asked on', 'Answered on'];
+// The facts of an eval row: every column except the ID, who looks, the day, an open dialog and what the screen must show.
+const notFacts = new Set(['Eval', 'Viewer', 'Today', 'Dialog', 'Due', 'State', 'Actions']);
 
 function given(row) {
-  const parts = facts.filter(f => row[f] && row[f] !== '-').map(f => `${f.toLowerCase()} ${day(row[f])}`);
-  const dialog = row.Dialog && row.Dialog !== '-' ? `, with the ${row.Dialog} dialog open and no reason written` : '';
+  const parts = Object.keys(row).filter(f => !notFacts.has(f)).filter(f => row[f] && row[f] !== '-').map(f => `${f.toLowerCase()} ${day(row[f])}`);
+  const dialog = row.Dialog && row.Dialog !== '-' ? `, with the ${row.Dialog} dialog open and nothing written in it yet` : '';
   return `a request ${parts.join(', ')}, opened by the ${roleName(row.Viewer).toLowerCase()} on ${day(row.Today)}${dialog}`;
 }
 
