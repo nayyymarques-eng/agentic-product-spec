@@ -65,9 +65,14 @@ const OVER: Record<DialogId, StateId[]> = {
   'DL-03': ['ST-01', 'ST-02', 'ST-03', 'ST-04', 'ST-05', 'ST-08', 'ST-09'], // BR-04
 };
 
-/** The dialog on the screen, if any: the one the lead opened, while the request is in a state it opens over. */
+/** The button that opens each dialog. */
+const OPENS: Record<DialogId, string> = { 'DL-01': 'Extend', 'DL-02': 'Ask for proof of identity', 'DL-03': 'Mark as answered' };
+
+/** The dialog on the screen, if any: the one the lead opened, while the request is in a state it opens over and that
+ * state still offers its button. A request extended or asked in another tab closes the dialog (D-04, D-10). */
 export function dialogOf(r: Request, v: View): DialogId | null {
-  return v.dialog && OVER[v.dialog].includes(stateOf(r, v)) ? v.dialog : null;
+  if (!v.dialog || !OVER[v.dialog].includes(stateOf(r, v))) return null;
+  return stateActions(r, v).some(a => a.label === OPENS[v.dialog!]) ? v.dialog : null;
 }
 
 /** The buttons the screen offers, in order: the dialog's when one is open, else the state's. */
@@ -79,18 +84,24 @@ export function actionsFor(r: Request, v: View): Action[] {
     case 'DL-02': return [{ label: 'Ask', variant: 'primary', disabled: blank }, cancel];
     case 'DL-03': return [{ label: 'Mark as answered', variant: 'primary', disabled: blank }, cancel];
   }
+  return stateActions(r, v);
+}
+
+/** The state's own buttons, in order. */
+function stateActions(r: Request, v: View): Action[] {
   const answer: Action = { label: 'Mark as answered', variant: 'primary' };
   const extend: Action = { label: 'Extend', variant: 'secondary' };
   const ask: Action = { label: 'Ask for proof of identity', variant: 'tertiary' };
   const received: Action = { label: 'Proof received', variant: 'primary' };
   const once = r.extendedOn ? [] : [extend];                 // extended once (BR-02)
+  const askOnce = r.proofAskedOn ? [] : [ask];               // asked once (BR-05, D-10)
   switch (stateOf(r, v)) {
     case 'ST-06': case 'ST-07': case 'ST-10': return [];
     case 'ST-09': return [received, { ...answer, variant: 'tertiary' }]; // no Extend once the due date has passed (BR-02); answering stays least prominent (Q-05)
     case 'ST-03': return [answer];
     case 'ST-08': case 'ST-05': return [received, ...once, { ...answer, variant: 'tertiary' }];
-    case 'ST-04': return [answer, ask];
-    default: return [answer, ...once, ask];
+    case 'ST-04': return [answer, ...askOnce];
+    default: return [answer, ...once, ...askOnce];
   }
 }
 

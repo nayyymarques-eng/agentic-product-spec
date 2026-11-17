@@ -15,9 +15,9 @@ From the email a person sends to the shop to the answer. One flow per job a role
 | F-02 | R-01 | The privacy lead opens the request and sees its due date | request | ST-01, ST-02, ST-03 | - | F-03, or F-08 when the due date passes |
 | F-03 | R-01 | Is it clear who the person is? | - | - | - | yes: F-05; no: F-04 |
 | F-04 | R-01 | Writes the doubt, asks for proof of identity, and waits | request | ST-05, ST-08 | DL-02 | F-05 when the proof arrives, F-06 to extend while waiting, or F-08 when the due date passes |
-| F-05 | R-01 | Can the answer go out by the due date? | - | - | - | yes: F-07; no: F-06 |
-| F-06 | R-01 | Extends the due date by two months, with a reason for the person | request | ST-04 | DL-01 | F-07, or F-08 when the new due date passes |
-| F-07 | R-01 | Sends the answer from the shop's email, and records the date it was sent | request | ST-06, ST-10 | DL-03 | end |
+| F-05 | R-01 | Can the answer go out by the due date? | - | - | - | yes: F-07; no, and not extended yet: F-06; no, and already extended: F-08 |
+| F-06 | R-01 | Extends the due date by two months, with a reason for the person | request | ST-04, ST-05, ST-08 | DL-01 | F-07, or F-08 when the new due date passes |
+| F-07 | R-01 | Sends the answer, and records the date it was sent | request | ST-06, ST-10 | DL-03 | end |
 | F-08 | R-01 | The due date passes with no answer | request | ST-03, ST-09 | - | F-07 |
 
 ## Evals
@@ -43,6 +43,7 @@ The decisions only this feature needs. They apply to this flow and the screens i
 | D-06 | A request is "due soon" from 7 days before its due date. | The lead needs a week to gather the data and write the answer (G-02). | Product designer | 2026-11-13 |
 | D-07 | While the lead waits for proof of identity, the request can still be extended, and it shows as due soon in its last 7 days. | Proof can arrive late. Without this, the lead loses the extension in the last week. | Product designer | 2026-11-17 |
 | D-08 | An answer sent after the due date shows as answered late, with the number of days. | A complaint file must show it, and an answer on time must not look the same (G-03). | Product designer | 2026-11-17 |
+| D-10 | Proof of identity is asked for once per request. | One doubt, one record: a second ask would hide the first (G-03). Whether one proof can be not enough is Q-07. | Product designer | 2026-11-17 |
 | D-09 | Each dialog that needs a written reason, doubt or date keeps its main button disabled until it is written. | The person must be told the reasons for an extension (PRIV-03), a doubt about identity must be reasonable (PRIV-07), and an answer needs its date to show later what was done (G-03). | Product designer | 2026-11-17 |
 
 ## Not covered
@@ -53,3 +54,6 @@ What this feature leaves out on purpose. Each is a gap someone decided to leave,
 - A request before the support agent sends it on. It sits in the support inbox, outside the product, while its due date already runs.
 - Requests to correct, delete or move data. This flow is a request for a copy.
 - The list of requests, and reminders. D-02 says what the list does; no flow describes it yet.
+- Who enters the day a request reached the shop and the day it was sent on, and dates out of order, such as sent before it was received.
+- The channel the answer went by. The lead answers from the shop's email (D-01); a person who asks for another channel (PRIV-04) is answered outside the product, and Q-09 asks what to record.
+- Asking for proof of identity after the due date (Q-08).

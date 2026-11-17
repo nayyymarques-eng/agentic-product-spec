@@ -13,6 +13,7 @@ export function words({ request: r, view: v }: { request: Request; view: View })
   const d = (day?: string) => (day ? short(day, v.today) : '');
   return {
     due: d(due), received: d(r.received), sent: d(r.sentOn), asked: d(r.proofAskedOn), answered: d(r.answeredOn),
+    extended: d(r.extendedOn), arrived: d(r.proofReceivedOn),
     in: left === 0 ? 'today' : left === 1 ? 'tomorrow' : `in ${left} days`,
     overdue: days(-left),
     late: r.answeredOn ? days(daysBetween(due, r.answeredOn)) : '',
@@ -54,15 +55,17 @@ export function RequestScreen({ request: r, view: v }: { request: Request; view:
   }[state as 'ST-03' | 'ST-05' | 'ST-08' | 'ST-09'];
 
   const says = {
-    'ST-06': `Sent from the shop's email on ${w.answered}`,
-    'ST-10': `Sent from the shop's email on ${w.answered}, ${w.late} after the due date`,
+    'ST-06': `Answer sent on ${w.answered}`,
+    'ST-10': `Answer sent on ${w.answered}, ${w.late} after the due date`,
   }[state as 'ST-06' | 'ST-10'];
 
-  const history = [
+  // What happened, once it has. The support agent sees none of it, nor the lead's notes (BR-08).
+  const lead = v.viewer === 'R-01';
+  const history = lead ? [
+    r.extendedOn ? `Extended on ${w.extended}` : null,
     r.proofAskedOn ? `Proof of identity asked for on ${w.asked}` : null,
-    r.proofReceivedOn ? `Proof of identity received on ${short(r.proofReceivedOn, v.today)}` : null,
-    r.extendedOn ? `Extended on ${short(r.extendedOn, v.today)}` : null,
-  ].filter((h): h is string => h !== null);
+    r.proofReceivedOn ? `Proof of identity received on ${w.arrived}` : null,
+  ].filter((h): h is string => h !== null) : [];
 
   return (
     <div data-state={state}>
@@ -88,9 +91,9 @@ export function RequestScreen({ request: r, view: v }: { request: Request; view:
                 <ListItem label="Kind" value="See their data" />
                 <ListItem label="From" value="alex@example.com" />
                 <ListItem label="Order" value="#10482" />
-                <ListItem label="Due date" value={w.due} />
-                {r.extendReason ? <ListItem label="Reason for the extension" value={r.extendReason} /> : null}
-                {r.proofDoubt ? <ListItem label="Reason for asking for proof" value={r.proofDoubt} /> : null}
+                {lead ? <ListItem label="Due date" value={w.due} /> : null}
+                {lead && r.extendReason ? <ListItem label="Reason for the extension" value={r.extendReason} /> : null}
+                {lead && r.proofDoubt ? <ListItem label="Reason for asking for proof" value={r.proofDoubt} /> : null}
               </List>
             </Section>
             {history.length ? (

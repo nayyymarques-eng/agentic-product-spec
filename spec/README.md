@@ -149,6 +149,7 @@ An example, from `screens/request.md`:
 - Goals: G-01, G-02, G-03, G-04
 - Never shows: €, fee, price          ← text that must not appear in any state
 - Shows in every state: "Reached the shop on {received}", ...   ← text every state shows
+- Shows when it happened: "Extended on {extended}", ...           ← a line that shows once its words have a value
 
 ## States
 ### ST-03 Overdue
@@ -164,6 +165,7 @@ An example, from `screens/request.md`:
 - **Status** and **Banner** name a component of the design system, its variant and the words it shows. `none` means the state has none.
 - **Actions** lists the buttons in order, each with its variant. A button that shows but cannot be used yet says `disabled`.
 - **Says** lists words that must appear.
+- **Never shows** lists words this state must not show, such as what another role may not see. `what happened` hides the screen's "Shows when it happened" lines. Every fact the screen records shows somewhere, or a state says it never shows it.
 - **Rules** and **Goals** say why the state exists.
 - **Built: not yet** marks a state the spec has merged and nobody has built yet. The same line under the screen's title marks the whole screen. The behaviour check and the design system check skip what is marked and list it on every run, and the handoff shows it. The pull request that builds it removes the line.
 
@@ -173,7 +175,7 @@ A dialog is not a state. It opens over a state, from one of that state's buttons
 
 ```
 ### DL-01 Extend
-- Opens from: Extend                       ← the button that opens it, offered by every state it opens over
+- Opens from: Extend                       ← the button that opens it; the dialog shows only while that button is offered
 - Over: ST-01, ST-02, ST-05, ST-08          ← the only states it shows over
 - Title: "Extend the due date by two months"
 - Asks: "Reason, for the letter to the person"
@@ -182,7 +184,7 @@ A dialog is not a state. It opens over a state, from one of that state's buttons
 - Rules: BR-02
 ```
 
-When time moves the request to a state the dialog does not list, the dialog closes and nothing it asked for is done. The flow step that opens it names it in its Dialog column. When something replaces the whole screen, such as a step of several pages, write it as a state instead: the choice is made per screen, in the spec, where everyone sees it.
+When time moves the request to a state the dialog does not list, the dialog closes and nothing it asked for is done. It also closes when the state stops offering its button: a request extended in another tab no longer offers Extend, so a second Extend dialog cannot go through. An action that can be done once says so on its button ("unless already extended"), and an eval opens its dialog after it was done. The flow step that opens it names it in its Dialog column. When something replaces the whole screen, such as a step of several pages, write it as a state instead: the choice is made per screen, in the spec, where everyone sees it.
 
 ### Evals
 

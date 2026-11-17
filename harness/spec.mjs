@@ -109,6 +109,8 @@ function screen(file) {
       id, name: heading.slice(id.length).trim(), when: b.When ?? '',
       status: part(b.Status), banner: part(b.Banner),
       actions: actions(b.Actions), says: quoted(b.Says), rules: list(b.Rules), goals: list(b.Goals),
+      // What this state must never show: quoted text, or "what happened" for the screen's history lines.
+      never: quoted(b['Never shows']), hidesHappened: /what happened/i.test(b['Never shows'] ?? ''),
       notBuilt: notYet(b.Built),
     };
   });
@@ -129,7 +131,7 @@ function screen(file) {
   return {
     name, file: `spec/screens/${file}`, title: text.split('\n')[0].replace(/^# Screen: /, ''),
     template: top.Template ?? '', roles: list(top.Roles), goals: list(top.Goals), never: list(top['Never shows']),
-    always: quoted(top['Shows in every state']), notBuilt: notYet(top.Built), states, dialogs, evals,
+    always: quoted(top['Shows in every state']), happened: quoted(top['Shows when it happened']), notBuilt: notYet(top.Built), states, dialogs, evals,
   };
 }
 
@@ -185,8 +187,13 @@ export function readSpec() {
   };
 }
 
-/** The dialog an eval row must show: the one it opens, if the row's state is one the dialog opens over; else none. */
+/** The dialog an eval row must show: the one it opens, while the row's state is one the dialog opens over and that
+ * state still offers the button that opens it. When the state offers that button only under a condition ("unless
+ * already extended"), the row's Actions say whether it still does: the dialog's buttons, or the state's. */
 export function dialogShown(screen, row) {
   const d = screen.dialogs.find(x => x.id === row.Dialog);
-  return d && d.over.includes(row.State) ? d : null;
+  if (!d || !d.over.includes(row.State)) return null;
+  const opener = screen.states.find(s => s.id === row.State)?.actions.find(a => a.label === d.opensFrom);
+  if (opener?.condition && list(row.Actions).join(', ') !== d.actions.map(a => a.label).join(', ')) return null;
+  return d;
 }

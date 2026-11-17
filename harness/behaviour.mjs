@@ -104,7 +104,14 @@ export async function checkBehaviour() {
       }
       // BEH-06: the words that must show, and the ones that never may.
       for (const s of [...screen.always, ...want.says, ...(dlg?.asks ?? [])]) if (!got.body.includes(fill(s, words))) fail('BEH-06', ex, `"${fill(s, words)}" is missing`);
-      for (const n of screen.never) if (got.body.toLowerCase().includes(n.toLowerCase())) fail('BEH-06', ex, `shows "${n}"`);
+      for (const n of [...screen.never, ...want.never]) if (got.body.toLowerCase().includes(n.toLowerCase())) fail('BEH-06', ex, `shows "${n}"`);
+      // What happened: each line shows once every word in it has a value, unless the state never shows it.
+      for (const s of screen.happened) {
+        const has = [...s.matchAll(/\{(\w+)\}/g)].every(m => words[m[1]]);
+        const head = s.split('{')[0].trim();
+        if (has && !want.hidesHappened && !got.body.includes(fill(s, words))) fail('BEH-06', ex, `"${fill(s, words)}" is missing`);
+        if ((!has || want.hidesHappened) && head && got.body.includes(head)) fail('BEH-06', ex, `shows "${head}", which has not happened${want.hidesHappened ? ' or this state never shows' : ''}`);
+      }
     }
   }
   await browser.close();
