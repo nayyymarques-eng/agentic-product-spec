@@ -126,9 +126,13 @@ function flow(file) {
   }));
   // Evals for what the flow does that no screen shows, such as a message the product must never send.
   const evals = (tables(text.split('\n## Evals')[1] ?? '')[0] ?? []).map(r => ({ ...r, rules: list(r.Rules) }));
+  // The feature's own decisions: they apply to this flow and the screens its steps land on, and nowhere else.
+  const name = file.replace(/\.md$/, '');
+  const here = [name, ...new Set(steps.map(x => x.screen).filter(Boolean))].join(', ');
+  const decisions = (tables(text.split('\n## Decisions')[1] ?? '')[0] ?? []).map(r => ({ ...r, 'Applies to': here, file: `spec/flows/${file}` }));
   return {
     name: file.replace(/\.md$/, ''), file: `spec/flows/${file}`, title: text.split('\n')[0].replace(/^# Flow: /, ''),
-    trigger: top.Trigger ?? '', ends: top.Ends ?? '', roles: list(top.Roles), goals: list(top.Goals), steps, evals,
+    trigger: top.Trigger ?? '', ends: top.Ends ?? '', roles: list(top.Roles), goals: list(top.Goals), steps, evals, decisions,
   };
 }
 
@@ -153,11 +157,14 @@ export function featureHash(flow) {
 export function readSpec() {
   const sources = readdirSync(join(specDir, 'sources')).filter(f => f.endsWith('.md') && f !== 'README.md')
     .flatMap(f => (tables(readFileSync(join(specDir, 'sources', f), 'utf8'))[0] ?? []).map(r => ({ ...r, file: `spec/sources/${f}` })));
+  const flows = readdirSync(join(specDir, 'flows')).filter(f => f.endsWith('.md')).sort().map(flow);
   return {
-    goals: table('goals.md'), roles: table('roles.md'), rules: table('rules.md'), decisions: table('decisions.md'),
+    goals: table('goals.md'), roles: table('roles.md'), rules: table('rules.md'),
+    // Product decisions in decisions.md, then each feature's own decisions, from its flow file.
+    decisions: [...table('decisions.md').map(r => ({ ...r, file: 'spec/decisions.md' })), ...flows.flatMap(f => f.decisions)],
     replaced: table('decisions-replaced.md'),
     questions: table('questions.md'), glossary: table('glossary.md'), sources,
-    flows: readdirSync(join(specDir, 'flows')).filter(f => f.endsWith('.md')).sort().map(flow),
+    flows,
     screens: readdirSync(join(specDir, 'screens')).filter(f => f.endsWith('.md')).sort().map(screen),
   };
 }

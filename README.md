@@ -22,8 +22,8 @@ One spec per product, in the `spec/` folder.
 
 | Level | What it holds | Where |
 |---|---|---|
-| Product | What the whole product shares: the roles (kinds of user) and their persona sheets, the goals of each role, the external rules, the product decisions, the business rules with their sources, the open questions and a glossary | `spec/roles.md`, `personas/`, `goals.md`, `sources/`, `decisions.md`, `rules.md`, `questions.md`, `glossary.md` |
-| Feature | What each feature does: one file per task, with each step, who acts and the screen state it lands on; one file per screen, with every state and a table of evals | `spec/flows/`, `spec/screens/` |
+| Product | What the whole product shares: the roles (kinds of user) and their persona sheets, the goals of each role, the external rules, the decisions that reach beyond one feature, the business rules with their sources, the open questions and a glossary | `spec/roles.md`, `personas/`, `goals.md`, `sources/`, `decisions.md`, `rules.md`, `questions.md`, `glossary.md` |
+| Feature | What each feature does: one file per task, with each step, who acts, the screen state it lands on and the decisions for that feature only; one file per screen, with every state and a table of evals | `spec/flows/`, `spec/screens/` |
 
 Every item has an ID: roles R-01, goals G-01, external rules PRIV-01, decisions D-01, business rules BR-01, questions Q-01, flow steps F-01, screen states ST-01, evals E-01. Code, checks and the handoff cite these IDs, so a search for an ID finds everything that uses it.
 

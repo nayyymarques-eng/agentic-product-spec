@@ -50,7 +50,7 @@ const out = [
   ...flows.map(f => read(f.file)),
   ...screens.map(s => read(s.file)),
   rows('Business rules', 'spec/rules.md', spec.rules),
-  rows('Product decisions', 'spec/decisions.md', spec.decisions),
+  rows('Product decisions', 'spec/decisions.md', spec.decisions.filter(d => d.file === 'spec/decisions.md')),
   rows('Open questions', 'spec/questions.md', spec.questions),
   rows('External rules', 'spec/sources/', spec.sources),
   rows('Goals', 'spec/goals.md', spec.goals),

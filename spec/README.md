@@ -17,7 +17,7 @@ Everything in this folder is an example for a made-up product: an inbox where a 
 | `personas/` | One persona sheet per role, from interviews: each trait with its source and how many interviews say it | none |
 | `goals.md` | What each role comes to the product to get done | G-01 |
 | `sources/` | The external rules: laws, regulator guidance, contracts, platform policies and standards, each with its source text. Written once, here. The synthetic user and the rules watch read them here | PRIV-01 |
-| `decisions.md` | The product decisions: choices the team made on purpose, with why, who decided, when, and the flows and screens they apply to | D-01 |
+| `decisions.md` | The product decisions that reach beyond one feature: choices the team made on purpose, with why, who decided, when, and the flows and screens they apply to (`product` for all) | D-01 |
 | `decisions-replaced.md` | Decisions that are no longer true, each with the decision that replaced it. Nothing may cite them | D-01 |
 | `rules.md` | The business rules: what the product does, each citing the external rules, decisions, goals or roles it comes from | BR-01 |
 | `questions.md` | What nobody has answered yet, who will, what the product does meanwhile, and the flows and screens it applies to | Q-01 |
@@ -47,7 +47,7 @@ One row per rule in `rules.md`:
 
 ## How a decision is written
 
-One row per decision in `decisions.md`. There is one log for the whole product, even for a decision made while one flow was written: a decision made for one flow often holds for others.
+Decisions live at two levels. A decision that holds for the whole product, or for more than one feature, is a row in `decisions.md`. A decision for one feature only is a row in that feature's flow file, under `## Decisions`, with the same columns except Applies to: it applies to that flow and its screens. So the product log stays short, and most decisions sit beside the feature they shape. IDs are shared across both levels: D-07 is one decision, wherever it lives. When a feature's decision turns out to hold for another feature too, its row moves up to `decisions.md`, with the same ID.
 
 | Column | What it holds |
 |---|---|
@@ -58,9 +58,23 @@ One row per decision in `decisions.md`. There is one log for the whole product, 
 | Applies to | The flows and screens it touches, by file name, or `product` for the whole product |
 | Date | When it was made |
 
-A decision can hold for the whole product (`product` in "Applies to") or for some features only, and two features can decide differently. When a decision is no longer true, its row moves to `decisions-replaced.md`, with two more columns: the decision that replaced it and the date. The spec check then fails on anything that still cites the old one, so each place that followed it is looked at again.
+Two features can decide differently. When a decision is no longer true, its row moves to `decisions-replaced.md`, with two more columns: the decision that replaced it and the date. The spec check then fails on anything that still cites the old one, so each place that followed it is looked at again.
 
 A business rule cites the decisions it follows, by ID. When an open question is answered, the answer becomes a decision. An open question names the flows and screens it applies to: it may stay open inside one feature, but one that reaches further is answered before the change merges.
+
+## When two states can be true at once
+
+A screen lists its states in order, and when two could apply, the first one wins. That order is a decision, so it is never left to the order of a file. Every pair of states that can be true at the same time gets an eval that sets up both, and says which state wins and what it keeps from the other. Look for these pairs:
+
+- **Time passes during another state**: the due date passes while the request waits for proof. A state that time brings in keeps the limits of the state it interrupts.
+- **Who is looking**: a role with a narrower view of a state that is also late, or also blocked.
+- **A dialog open over a state**: what the state underneath still shows.
+- **A final state against time**: an answer sent after the due date.
+- **Events out of order**: proof that arrives after the due date; an action tried after it is no longer allowed.
+- **Undo**: the state a request goes back to.
+- **Two people at once**: two actions on the same thing.
+
+The spec review lists every pair it finds with no eval.
 
 ## How a flow is written
 

@@ -45,8 +45,8 @@ for (const s of spec.screens) {
 const parts = new Set([...spec.flows.map(f => f.name), ...spec.screens.map(s => s.name)]);
 for (const d of spec.decisions) {
   const where = (d['Applies to'] ?? '').split(',').map(x => x.trim()).filter(Boolean);
-  if (!where.length) fail('SPEC-10', `${d.ID} names no flow or screen it applies to`, 'spec/decisions.md');
-  for (const w of where) if (w !== PRODUCT && !parts.has(w)) fail('SPEC-10', `${d.ID} applies to "${w}", which is not a flow or a screen`, 'spec/decisions.md');
+  if (!where.length) fail('SPEC-10', `${d.ID} names no flow or screen it applies to`, d.file);
+  for (const w of where) if (w !== PRODUCT && !parts.has(w)) fail('SPEC-10', `${d.ID} applies to "${w}", which is not a flow or a screen`, d.file);
 }
 for (const r of spec.roles) {
   const sheet = (r['Persona sheet'] ?? '').replace(/`/g, '').trim();
@@ -131,7 +131,7 @@ const live = new Set(spec.decisions.map(d => d.ID));
 const gone = new Map(spec.replaced.map(d => [d.ID, d]));
 for (const d of spec.replaced) if (!live.has(d['Replaced by'])) fail('SPEC-11', `${d.ID} is replaced by "${d['Replaced by']}", which is not a decision`, 'spec/decisions-replaced.md');
 const citing = [
-  ...spec.rules.map(r => [r, 'spec/rules.md']), ...spec.decisions.map(r => [r, 'spec/decisions.md']),
+  ...spec.rules.map(r => [r, 'spec/rules.md']), ...spec.decisions.filter(r => r.file === 'spec/decisions.md').map(r => [r, r.file]),
   ...spec.questions.map(r => [r, 'spec/questions.md']), ...spec.glossary.map(r => [r, 'spec/glossary.md']),
   ...[...spec.flows, ...spec.screens].map(x => [{ ID: x.name, text: readFileSync(join(root, x.file), 'utf8') }, x.file]),
 ];
