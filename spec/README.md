@@ -57,6 +57,9 @@ Decisions live at two levels. A decision about the whole product, made for no si
 | Decided by | Who made it |
 | Applies to | The flows and screens it touches, by file name, or `product` for the whole product |
 | Date | When it was made |
+| Status | Optional. `proposed` until the person in Decided by approves it, then `decided`. A table without the column holds decided decisions only |
+
+A proposed decision is written like any other, with Status `proposed` and, in Decided by, the person who must approve it. Until then, every agent treats it as an open question, and the spec check fails, so it cannot merge undecided. The person approves it by setting Status to `decided` in the same pull request.
 
 Two features can decide differently. When a decision is no longer true, its row moves to `decisions-replaced.md`, with two more columns: the decision that replaced it and the date. The spec check then fails on anything that still cites the old one, so each place that followed it is looked at again.
 
@@ -218,4 +221,4 @@ Two scripts check nothing, and help use the spec:
 
 Run the checks on the result of the merge, not only on the branch: turn on GitHub's merge queue, or "Require branches to be up to date before merging". Two branches that each pass can still clash, such as two new decisions that both take D-07.
 
-Who must approve a change to each part, such as legal for `sources/` and product for `decisions.md`, is set in `.github/CODEOWNERS`.
+Who must approve a change to each part, such as legal for `sources/`, product for `decisions.md` and each feature's owner for its flow and screens, is set in `.github/CODEOWNERS`. With a proposed decision, this is how a team works on the spec together: one person proposes, the owner of that part reviews the pull request, and the person in Decided by sets the decision to `decided`.

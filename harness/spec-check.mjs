@@ -147,6 +147,14 @@ for (const s of spec.screens) for (const d of s.dialogs) {
   if (!spec.flows.some(f => f.steps.some(x => x.screen === s.name && x.dialog === d.id))) fail('SPEC-09', `${d.id} is opened by no step of a flow`, s.file);
 }
 
+// SPEC-16: a decision is decided before it merges. A Status column is optional; when a decision has one, it is
+// "decided", or "proposed" until the person in Decided by approves it.
+for (const d of spec.decisions) {
+  const status = (d.Status ?? 'decided').trim().toLowerCase();
+  if (status === 'proposed') fail('SPEC-16', `${d.ID} is proposed: it merges once the person in Decided by (${d['Decided by'] || 'nobody named'}) sets its Status to decided`, d.file);
+  else if (status !== 'decided') fail('SPEC-16', `${d.ID} has Status "${d.Status}"; it is either proposed or decided`, d.file);
+}
+
 // SPEC-11: nothing cites a replaced decision. Each replaced decision names the decision that replaces it.
 const live = new Set(spec.decisions.map(d => d.ID));
 const gone = new Map(spec.replaced.map(d => [d.ID, d]));
@@ -209,4 +217,4 @@ console.log(`Spec: ${spec.flows.length} flow, ${spec.rules.length} rules, ${spec
 if (stale.length) console.log(`External rules to read again:\n${stale.join('\n')}`);
 if (triage.length) console.log(`To triage, for the design system owner:\n${[...new Set(triage)].join('\n')}`);
 if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}`); process.exit(1); }
-console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-15');
+console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-16');

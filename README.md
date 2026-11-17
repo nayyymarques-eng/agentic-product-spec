@@ -98,6 +98,7 @@ Each break below was made on purpose, one at a time. Each line is what the check
 | No step opens a dialog | `SPEC-09 (DL-02 is opened by no step of a flow)` |
 | A dialog has no eval where it closes | `SPEC-06 (DL-02 has no eval where it closes, on a state it does not open over)` |
 | A dialog opens over a state that has no button for it | `SPEC-15 (DL-02 opens from "Ask for proof of identity", which ST-03 does not offer)` |
+| A decision is still proposed | `SPEC-16 (D-01 is proposed: it merges once the person in Decided by (Product designer, with the privacy lead) sets its Status to decided)` |
 | A step goes to a step that does not exist | `SPEC-08 (F-02 goes to F-09, which is not a step)` |
 
 The spec check also found a real gap in the design system: the spec needs disabled buttons in its three dialogs, and the design system's button has no disabled state. This does not block the build. It is reported for the design system's owner to decide:
@@ -116,7 +117,7 @@ SPEC-07 DL-03 ("Mark as answered" is disabled; the button contract has no disabl
 | `spec/personas/` | One persona sheet per role, with made-up data |
 | `src/request.ts` | The behaviour of the example screen in code: how the due date is counted, which state applies, which buttons show. Each part cites the rule IDs it applies |
 | `screens/request.tsx` | The example screen, built with [ai-ready-design-system](https://github.com/nayyymarques-eng/ai-ready-design-system). It also tells the checks how to read an eval row (`fromExample`) and how to fill the spec's {words} (`words`), so the checks work for any screen |
-| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-15 |
+| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-16 |
 | `harness/behaviour.mjs` | The behaviour check: BEH-01 to BEH-09 |
 | `harness/context.mjs` | `npm run context`: one feature's part of the spec, for an agent |
 | `.claude/agents/rules-watch.md` | The rules watch, run on a schedule |
