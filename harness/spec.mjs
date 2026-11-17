@@ -96,17 +96,66 @@ function bullets(block) {
 /** "- Built: not yet" marks a screen or a state the spec has merged and nobody has built yet. */
 const notYet = s => /^not yet$/i.test((s ?? '').trim());
 
+/** A test on an eval's facts, from words such as "Today is 0 to 7 days before Due" or "Proof asked on is set,
+ * Proof received on is -". Clauses joined by commas must all hold. Returns null for words it cannot read. */
+const day = d => Date.parse(`${d}T00:00:00Z`) / 86_400_000;
+export function factTest(words) {
+  const columns = [];
+  const use = (...cols) => { columns.push(...cols); return true; };
+  const clauses = splitTop(words).map(c => {
+    let m;
+    if ((m = c.match(/^(.+?) is set$/)) && use(m[1])) return r => r[m[1]] !== '-';
+    if ((m = c.match(/^(.+?) is (\d+) to (\d+) days before (.+)$/)) && use(m[1], m[4])) return r => between(day(r[m[4]]) - day(r[m[1]]), +m[2], +m[3]);
+    if ((m = c.match(/^(.+?) is more than (\d+) days before (.+)$/)) && use(m[1], m[3])) return r => day(r[m[3]]) - day(r[m[1]]) > +m[2];
+    if ((m = c.match(/^(.+?) is on or before (.+)$/)) && use(m[1], m[2])) return r => day(r[m[1]]) <= day(r[m[2]]);
+    if ((m = c.match(/^(.+?) is after (.+)$/)) && use(m[1], m[2])) return r => day(r[m[1]]) > day(r[m[2]]);
+    if ((m = c.match(/^(.+?) is (.+)$/)) && use(m[1])) return r => r[m[1]] === m[2];
+    return null;
+  });
+  if (!clauses.length || clauses.includes(null)) return null;
+  const test = r => clauses.every(t => t(r));
+  test.columns = columns;
+  return test;
+}
+const between = (n, lo, hi) => n >= lo && n <= hi;
+
+/** "## Conditions": what decides a screen's state. Each condition has values, and each value says how an eval's
+ * facts set it. Optional: a screen without it keeps a "When:" line on each state, and SPEC-17 does not run. */
+function conditions(text) {
+  const rows = tables(text.split('\n## Conditions')[1]?.split('\n## ')[0] ?? '')[0] ?? [];
+  const out = [];
+  for (const r of rows) {
+    let c = out.find(x => x.name === r.Condition);
+    if (!c) out.push(c = { name: r.Condition, values: [] });
+    c.values.push({ value: r.Value, facts: r["From the eval's facts"], test: factTest(r["From the eval's facts"] ?? '') });
+  }
+  return out;
+}
+
 function screen(file) {
   const text = readFileSync(join(specDir, 'screens', file), 'utf8');
   const name = file.replace(/\.md$/, '');
   const top = bullets(text.split('\n## ')[0]);
   const statesText = text.split('\n## States')[1]?.split('\n## ')[0] ?? '';
+  const conds = conditions(text);
+  // The decision table, before the first state: one row per state, in the order the states are tried; the first row
+  // that matches wins. A cell holds one value, several separated by commas, or "-" for any value.
+  const decision = conds.length ? (tables(statesText.split('\n### ')[0])[0] ?? []).map(r => ({
+    state: (r.State ?? '').split(' ')[0],
+    cells: Object.fromEntries(conds.map(c => [c.name, r[c.name] === undefined ? undefined : (r[c.name].trim() === '-' ? null : splitTop(r[c.name]))])),
+  })) : [];
+  const whenOf = id => {
+    const row = decision.find(r => r.state === id);
+    if (!row) return '';
+    const set = Object.entries(row.cells).filter(([, v]) => v).map(([k, v]) => `${k} ${v.join(' or ')}`);
+    return set.join(', ') || 'any';
+  };
   const states = statesText.split('\n### ').slice(1).map(block => {
     const [heading] = block.split('\n');
     const id = heading.split(' ')[0];
     const b = bullets(block);
     return {
-      id, name: heading.slice(id.length).trim(), when: b.When ?? '',
+      id, name: heading.slice(id.length).trim(), when: conds.length ? whenOf(id) : (b.When ?? ''),
       status: part(b.Status), banner: part(b.Banner),
       actions: actions(b.Actions), says: quoted(b.Says), rules: list(b.Rules), goals: list(b.Goals),
       // What this state must never show: quoted text, or "what happened" for the screen's history lines.
@@ -132,6 +181,7 @@ function screen(file) {
     name, file: `spec/screens/${file}`, title: text.split('\n')[0].replace(/^# Screen: /, ''),
     template: top.Template ?? '', roles: list(top.Roles), goals: list(top.Goals), never: list(top['Never shows']),
     always: quoted(top['Shows in every state']), happened: quoted(top['Shows when it happened']), notBuilt: notYet(top.Built), states, dialogs, evals,
+    conditions: conds, decision,
   };
 }
 
@@ -173,7 +223,7 @@ export function featureHash(flow) {
 }
 
 /** A fingerprint of what a feature does, without its words: each step's landing and next step, each state's and
- * dialog's buttons, citations and when it shows, each decision's ID and every eval row. A change that keeps it the
+ * dialog's buttons, citations and when it shows, the decision table's conditions and order, each decision's ID and every eval row. A change that keeps it the
  * same only rewords: the words a screen shows, a step's description, an explanation. Such a change gets a light
  * review, one run instead of three (spec/README.md, "How much review a change needs"). */
 export function structureHash(spec, flow) {
@@ -185,7 +235,8 @@ export function structureHash(spec, flow) {
     decisions: flow.decisions.map(d => d.ID), flowEvals: flow.evals.map(e => [e.Eval, e.rules]),
     screens: screens.map(s => ({
       name: s.name, roles: s.roles, goals: s.goals,
-      states: s.states.map(st => [st.id, st.status?.tone ?? '', st.banner?.tone ?? '', acts(st.actions), st.rules, st.goals, st.never, st.hidesHappened]),
+      conditions: s.conditions.map(c => [c.name, c.values.map(v => [v.value, v.facts])]), order: s.decision.map(r => r.state),
+      states: s.states.map(st => [st.id, st.when, st.status?.tone ?? '', st.banner?.tone ?? '', acts(st.actions), st.rules, st.goals, st.never, st.hidesHappened]),
       dialogs: s.dialogs.map(d => [d.id, d.opensFrom, d.over, acts(d.actions), d.rules, d.goals]),
       evals: s.evals,
     })),

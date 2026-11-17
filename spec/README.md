@@ -67,7 +67,7 @@ A business rule cites the decisions it follows, by ID. When an open question is 
 
 ## When two states can be true at once
 
-A screen lists its states in order, and when two could apply, the first one wins. That order is a decision, so it is never left to the order of a file. Every pair of states that can be true at the same time gets an eval that sets up both, and says which state wins and what it keeps from the other. Look for these pairs:
+A screen lists its states in order, and when two could apply, the first one wins. That order is a decision, so it is never left to the order of a file: with a decision table, it is the order of the table's rows. Every pair of states that can be true at the same time gets an eval that sets up both, and says which state wins and what it keeps from the other. Look for these pairs:
 
 - **Time passes during another state**: the due date passes while the request waits for proof. A state that time brings in keeps the limits of the state it interrupts.
 - **Who is looking**: a role with a narrower view of a state that is also late, or also blocked.
@@ -77,7 +77,7 @@ A screen lists its states in order, and when two could apply, the first one wins
 - **Undo**: the state a request goes back to.
 - **Two people at once**: two actions on the same thing.
 
-The spec review lists every pair it finds with no eval.
+With a decision table, the spec check finds every such pair itself and fails until each has an eval. Without one, the spec review lists the pairs it finds with no eval.
 
 ## Dates and the words for them
 
@@ -148,7 +148,7 @@ Every business rule needs at least one eval, on a screen or in a flow. The hando
 
 ## How a screen is written
 
-A screen file has four parts: a few lines about the whole screen, one section per state, one section per dialog, and a table of evals.
+A screen file has five parts: a few lines about the whole screen, its conditions, one section per state, one section per dialog, and a table of evals.
 
 A state is one situation the screen can be in, such as "overdue" or "answered". For each state, the file says when it applies, what the screen shows and which buttons it offers. The table of evals then gives exact situations, with dates, and the state each one must get. The checks build the screen for each eval, so every eval is also a test.
 
@@ -163,9 +163,16 @@ An example, from `screens/request.md`:
 - Shows in every state: "Reached the shop on {received}", ...   ← text every state shows
 - Shows when it happened: "Extended on {extended}", ...           ← a line that shows once its words have a value
 
+## Conditions
+| Condition | Value  | From the eval's facts |
+| Due date  | passed | Today is after Due    |    ← one row per value
+...
+
 ## States
+| State      | Viewer | Answered | Due date | Proof | Extended |   ← the decision table: first row that matches wins
+| ST-03 Overdue | lead | no      | passed   | -     | -        |
+...
 ### ST-03 Overdue
-- When: not answered, and today is after the due date
 - Status: badge critical "Overdue by {overdue}"
 - Banner: critical "This request is past its due date. ..."
 - Actions: Mark as answered (primary)
@@ -173,13 +180,29 @@ An example, from `screens/request.md`:
 - Goals: G-01, G-02
 ```
 
-- **When** says, in words, when the screen is in this state. The evals below make it exact.
+- **The decision table** says when the screen is in each state. See "Decision table" below.
 - **Status** and **Banner** name a component of the design system, its variant and the words it shows. `none` means the state has none.
 - **Actions** lists the buttons in order, each with its variant. A button that shows but cannot be used yet says `disabled`.
 - **Says** lists words that must appear.
 - **Never shows** lists words this state must not show, such as what another role may not see. `what happened` hides the screen's "Shows when it happened" lines. Every fact the screen records shows somewhere, or a state says it never shows it.
 - **Rules** and **Goals** say why the state exists.
 - **Built: not yet** marks a state the spec has merged and nobody has built yet. The same line under the screen's title marks the whole screen. The behaviour check and the design system check skip what is marked and list it on every run, and the handoff shows it. The pull request that builds it removes the line.
+
+### Decision table
+
+What decides a state is written once, as a table, so a script can check it. Under `## Conditions`, list what decides the state, such as the due date or whether proof has arrived, with every value it can take. Each value says how an eval's facts set it, in a few fixed forms: `Column is set`, `Column is -`, `Column is R-01`, `Column is after Column`, `Column is on or before Column`, `Column is more than N days before Column`, `Column is N to M days before Column`. Commas join forms that must all hold.
+
+Under `## States`, before the first state, the decision table has one row per state and one column per condition. A cell holds a value, several separated by commas, or `-` for any value. The rows are tried in order, and the first that matches wins.
+
+The spec check (SPEC-17) then tries every situation, one value of each condition, and fails when:
+
+- no state applies to a situation;
+- a row never wins, because a row above it always matches first;
+- two states match the same situation and no eval sets it up;
+- an eval's facts set no value, or two values, of a condition;
+- an eval names a state the table does not give for its facts.
+
+The table is optional. A screen whose states depend on something that cannot be listed as values writes a `- When:` line on each state instead, in words, and SPEC-17 does not run on it. A situation that cannot happen still counts, so give it a row: a state, or the first row that wins it.
 
 ### Dialogs
 

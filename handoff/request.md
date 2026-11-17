@@ -58,22 +58,42 @@ Each rule is a requirement. Its sources say why, so a change upstream finds this
 | BR-07 | A request is due soon from 7 days before its due date. | D-06, G-02 |
 | BR-08 | A support agent sees who has the request and the day they sent it, and nothing they can change. | R-02 |
 
+## Conditions
+
+What decides the state. Each condition takes one value at a time; the States table below says which values each state needs.
+
+| Condition | Value | From the facts |
+|---|---|---|
+| Viewer | lead | Viewer is R-01 |
+| Viewer | support | Viewer is R-02 |
+| Answered | no | Answered on is - |
+| Answered | on time | Answered on is on or before Due |
+| Answered | late | Answered on is after Due |
+| Due date | more than 7 days | Today is more than 7 days before Due |
+| Due date | 7 days or less | Today is 0 to 7 days before Due |
+| Due date | passed | Today is after Due |
+| Proof | not asked | Proof asked on is - |
+| Proof | waiting | Proof asked on is set, Proof received on is - |
+| Proof | arrived | Proof received on is set |
+| Extended | no | Extended on is - |
+| Extended | yes | Extended on is set |
+
 ## States
 
 When two states could apply, the first one wins.
 
 | ID | State | When | Status | Actions | Never shows |
 |---|---|---|---|---|---|
-| ST-07 | Support agent's view | a support agent opens a request, whatever its state | none: "With the privacy lead" | none | what happened, "Due date" |
-| ST-10 | Answered late | the privacy lead marked the request as answered, with a date after the due date | warning: "Answered {late} late" | none | - |
-| ST-06 | Answered | the privacy lead marked the request as answered, with a date on or before the due date | positive: "Answered on {answered}" | none | - |
-| ST-09 | Overdue, waiting for proof of identity | not answered, today is after the due date, and the proof of identity asked for has not arrived | critical: "Overdue by {overdue}" | Proof received (primary), Mark as answered (tertiary) | - |
-| ST-03 | Overdue | not answered, and today is after the due date | critical: "Overdue by {overdue}" | Mark as answered (primary) | - |
-| ST-08 | Waiting for proof of identity, due soon | the proof of identity asked for has not arrived, and the due date is 7 days away or less | warning: "Due {in}" | Proof received (primary), Extend (secondary) unless already extended, Mark as answered (tertiary) | - |
-| ST-05 | Waiting for proof of identity | the proof of identity asked for has not arrived | none: "Waiting for proof of identity" | Proof received (primary), Extend (secondary) unless already extended, Mark as answered (tertiary) | - |
-| ST-02 | Due soon | not answered, and the due date is 7 days away or less | warning: "Due {in}" | Mark as answered (primary), Extend (secondary) unless already extended, Ask for proof of identity (tertiary) unless already asked | - |
-| ST-04 | Extended | the privacy lead extended the due date, and it is more than 7 days away | info: "Extended to {due}" | Mark as answered (primary), Ask for proof of identity (tertiary) unless already asked | - |
-| ST-01 | Open | none of the above | info: "Due on {due}" | Mark as answered (primary), Extend (secondary), Ask for proof of identity (tertiary) unless already asked | - |
+| ST-07 | Support agent's view | Viewer support | none: "With the privacy lead" | none | what happened, "Due date" |
+| ST-10 | Answered late | Viewer lead, Answered late | warning: "Answered {late} late" | none | - |
+| ST-06 | Answered | Viewer lead, Answered on time | positive: "Answered on {answered}" | none | - |
+| ST-09 | Overdue, waiting for proof of identity | Viewer lead, Answered no, Due date passed, Proof waiting | critical: "Overdue by {overdue}" | Proof received (primary), Mark as answered (tertiary) | - |
+| ST-03 | Overdue | Viewer lead, Answered no, Due date passed | critical: "Overdue by {overdue}" | Mark as answered (primary) | - |
+| ST-08 | Waiting for proof of identity, due soon | Viewer lead, Answered no, Due date 7 days or less, Proof waiting | warning: "Due {in}" | Proof received (primary), Extend (secondary) unless already extended, Mark as answered (tertiary) | - |
+| ST-05 | Waiting for proof of identity | Viewer lead, Answered no, Due date more than 7 days, Proof waiting | none: "Waiting for proof of identity" | Proof received (primary), Extend (secondary) unless already extended, Mark as answered (tertiary) | - |
+| ST-02 | Due soon | Viewer lead, Answered no, Due date 7 days or less | warning: "Due {in}" | Mark as answered (primary), Extend (secondary) unless already extended, Ask for proof of identity (tertiary) unless already asked | - |
+| ST-04 | Extended | Viewer lead, Answered no, Due date more than 7 days, Extended yes | info: "Extended to {due}" | Mark as answered (primary), Ask for proof of identity (tertiary) unless already asked | - |
+| ST-01 | Open | Viewer lead, Answered no, Due date more than 7 days, Proof not asked or arrived, Extended no | info: "Due on {due}" | Mark as answered (primary), Extend (secondary), Ask for proof of identity (tertiary) unless already asked | - |
 
 ## Dialogs
 

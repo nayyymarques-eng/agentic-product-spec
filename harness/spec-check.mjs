@@ -192,6 +192,60 @@ for (const f of spec.flows) for (const e of f.evals) {
   for (const id of e.rules) if (!spec.rules.some(r => r.ID === id)) fail('SPEC-13', `${e.Eval} cites ${id}, which is not a rule`, f.file);
 }
 
+// SPEC-17: a screen with a decision table has a state for every situation, no row that never wins, an eval for
+// every situation where two states match, and evals that land where the table says. Optional: a screen without
+// "## Conditions" keeps a "When:" line on each state, and this check does not run on it.
+for (const s of spec.screens.filter(x => x.conditions.length)) {
+  const where = s.file;
+  for (const c of s.conditions) for (const v of c.values) if (!v.test) fail('SPEC-17', `${c.name} ${v.value}: "${v.facts}" cannot be read; write it as "Column is set", "is -", "is after Column", "is on or before Column", "is more than N days before Column" or "is N to M days before Column"`, where);
+  const ids = s.states.map(st => st.id);
+  for (const id of ids) if (!s.decision.some(r => r.state === id)) fail('SPEC-17', `${id} has no row in the decision table`, where);
+  for (const r of s.decision) {
+    if (!ids.includes(r.state)) fail('SPEC-17', `the decision table has a row for ${r.state}, which is not a state`, where);
+    for (const c of s.conditions) {
+      const cell = r.cells[c.name];
+      if (cell === undefined) fail('SPEC-17', `the decision table has no column for ${c.name}`, where);
+      else for (const v of cell ?? []) if (!c.values.some(x => x.value === v)) fail('SPEC-17', `${r.state}: "${v}" is not a value of ${c.name}`, where);
+    }
+  }
+  if (fails.some(f => f.startsWith('SPEC-17'))) continue;
+  // Every situation: one value of each condition. The first row that matches wins.
+  const matches = (r, sit) => s.conditions.every(c => !r.cells[c.name] || r.cells[c.name].includes(sit[c.name]));
+  let situations = [{}];
+  for (const c of s.conditions) situations = situations.flatMap(sit => c.values.map(v => ({ ...sit, [c.name]: v.value })));
+  const words = sit => s.conditions.map(c => `${c.name} ${sit[c.name]}`).join(', ');
+  const won = new Set(), pairs = new Map();
+  for (const sit of situations) {
+    const hit = s.decision.filter(r => matches(r, sit)).map(r => r.state);
+    if (!hit.length) { fail('SPEC-17', `no state for: ${words(sit)}`, where); continue; }
+    won.add(hit[0]);
+    for (const other of hit.slice(1)) { const k = `${hit[0]} + ${other}`; if (!pairs.has(k)) pairs.set(k, sit); }
+  }
+  for (const r of s.decision) if (!won.has(r.state)) fail('SPEC-17', `${r.state} never wins: a row above it always matches first`, where);
+  // Each eval: its facts set one value of each condition, and the table's state is the eval's state.
+  const situationOf = e => {
+    const sit = {};
+    for (const c of s.conditions) {
+      const missing = c.values.flatMap(v => v.test.columns).find(col => !(col in e));
+      if (missing) { fail('SPEC-17', `${e.Eval}: the evals have no "${missing}" column, which ${c.name} reads`, where); return null; }
+      const set = c.values.filter(v => v.test(e)).map(v => v.value);
+      if (set.length !== 1) { fail('SPEC-17', `${e.Eval} sets ${set.length ? set.join(' and ') : 'no value'} of ${c.name}; its facts must set exactly one`, where); return null; }
+      sit[c.name] = set[0];
+    }
+    return sit;
+  };
+  const evalSits = s.evals.map(e => [e, situationOf(e)]).filter(([, sit]) => sit);
+  for (const [e, sit] of evalSits) {
+    const first = s.decision.find(r => matches(r, sit))?.state ?? 'no state';
+    if (first !== e.State) fail('SPEC-17', `${e.Eval}: the decision table gives ${first}, the eval says ${e.State}`, where);
+  }
+  for (const [k, sit] of pairs) {
+    const [a, b] = k.split(' + ');
+    const both = sit2 => [a, b].every(id => matches(s.decision.find(r => r.state === id), sit2));
+    if (!evalSits.some(([, sit2]) => both(sit2))) fail('SPEC-17', `${a} and ${b} both match, and no eval says which wins; e.g. ${words(sit)}`, where);
+  }
+}
+
 // SPEC-14: every feature has a spec review of its current version. A review report in reviews/ names the feature's
 // spec hash (npm run context prints it); a change to the flow or its screens changes the hash, so the review runs again.
 // A light review, one run for a change that only rewords, counts only when the structure hash it names is the one of
@@ -217,4 +271,4 @@ console.log(`Spec: ${spec.flows.length} flow, ${spec.rules.length} rules, ${spec
 if (stale.length) console.log(`External rules to read again:\n${stale.join('\n')}`);
 if (triage.length) console.log(`To triage, for the design system owner:\n${[...new Set(triage)].join('\n')}`);
 if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}`); process.exit(1); }
-console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-16');
+console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-17');
