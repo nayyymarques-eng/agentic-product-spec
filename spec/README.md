@@ -4,7 +4,7 @@ This folder is everything the product knows that an agent cannot look up in the 
 
 The spec has two levels.
 
-- **The product**: what the whole product shares: its users, its rules and its decisions, some of which apply to one feature only. The files at the top of this folder, `sources/` and `personas/`.
+- **The product**: what the whole product shares: its users, its rules and the decisions about the whole product. The files at the top of this folder, `sources/` and `personas/`.
 - **The features**: what each feature does. `flows/`, one file per task, and `screens/`, one file per screen. A screen can sit in several flows.
 
 Everything in this folder is an example for a made-up product: an inbox where a shop's privacy lead answers people's requests about their personal data, under the GDPR. Replace it with your own.
@@ -47,7 +47,7 @@ One row per rule in `rules.md`:
 
 ## How a decision is written
 
-Decisions live at two levels. A decision that holds for the whole product, or for more than one feature, is a row in `decisions.md`. A decision for one feature only is a row in that feature's flow file, under `## Decisions`, with the same columns except Applies to: it applies to that flow and its screens. So the product log stays short, and most decisions sit beside the feature they shape. IDs are shared across both levels: D-07 is one decision, wherever it lives. When a feature's decision turns out to hold for another feature too, its row moves up to `decisions.md`, with the same ID.
+Decisions live at two levels. A decision about the whole product, made for no single feature, is a row in `decisions.md`, the product decision log. Every decision made for a feature is a row in that feature's flow file, under `## Decisions`, its feature decision log, even when other features follow it too. It applies to that flow and its screens; an Applies to column, when the table has one, names any other flow or screen that follows it. So each decision sits beside the feature it was made for, and the product log stays short. IDs are shared across both levels: D-07 is one decision, wherever it lives, and any file can cite it.
 
 | Column | What it holds |
 |---|---|

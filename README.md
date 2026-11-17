@@ -22,8 +22,8 @@ One spec per product, in the `spec/` folder.
 
 | Level | What it holds | Where |
 |---|---|---|
-| Product | What the whole product shares: the roles (kinds of user) and their persona sheets, the goals of each role, the external rules, the decisions that reach beyond one feature, the business rules with their sources, the open questions and a glossary | `spec/roles.md`, `personas/`, `goals.md`, `sources/`, `decisions.md`, `rules.md`, `questions.md`, `glossary.md` |
-| Feature | What each feature does: one file per task, with each step, who acts, the screen state it lands on and the decisions for that feature only; one file per screen, with every state and a table of evals | `spec/flows/`, `spec/screens/` |
+| Product | What the whole product shares: the roles (kinds of user) and their persona sheets, the goals of each role, the external rules, the decisions about the whole product, the business rules with their sources, the open questions and a glossary | `spec/roles.md`, `personas/`, `goals.md`, `sources/`, `decisions.md`, `rules.md`, `questions.md`, `glossary.md` |
+| Feature | What each feature does: one file per task, with each step, who acts, the screen state it lands on and the decisions made for that feature; one file per screen, with every state and a table of evals | `spec/flows/`, `spec/screens/` |
 
 Every item has an ID: roles R-01, goals G-01, external rules PRIV-01, decisions D-01, business rules BR-01, questions Q-01, flow steps F-01, screen states ST-01, evals E-01. Code, checks and the handoff cite these IDs, so a search for an ID finds everything that uses it.
 
@@ -49,7 +49,7 @@ The files in `spec/` describe a made-up product, so the kit has something real t
 
 The product is an inbox where a shop's privacy lead answers people's requests for a copy of their personal data, under the GDPR. The legal time to answer is one month, and it can be extended once by two months. The synthetic user in [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) reviews this same spec.
 
-- **One flow**, `spec/flows/answer-a-request.md`: it starts when a person emails the shop, and ends when the privacy lead has recorded the answer. 8 steps, 5 evals for what no screen shows, the decisions only this feature needs, and what it leaves out.
+- **One flow**, `spec/flows/answer-a-request.md`: it starts when a person emails the shop, and ends when the privacy lead has recorded the answer. 8 steps, 5 evals for what no screen shows, the decisions made for this feature, and what it leaves out.
 - **One screen**, `spec/screens/request.md`: one request, as the privacy lead or the support agent sees it. 10 states, 3 dialogs that open over them, and 51 evals, with one eval for every pair of states that can be true at once.
 
 The flow, as the handoff draws it:

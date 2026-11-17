@@ -144,10 +144,11 @@ function flow(file) {
   }));
   // Evals for what the flow does that no screen shows, such as a message the product must never send.
   const evals = (tables(text.split('\n## Evals')[1] ?? '')[0] ?? []).map(r => ({ ...r, rules: list(r.Rules) }));
-  // The feature's own decisions: they apply to this flow and the screens its steps land on, and nowhere else.
+  // The feature's decisions: every decision made for this feature. Each applies to this flow and the screens its steps
+  // land on, and to any other flow or screen its optional "Applies to" column names.
   const name = file.replace(/\.md$/, '');
   const here = [name, ...new Set(steps.map(x => x.screen).filter(Boolean))].join(', ');
-  const decisions = (tables(text.split('\n## Decisions')[1] ?? '')[0] ?? []).map(r => ({ ...r, 'Applies to': here, file: `spec/flows/${file}` }));
+  const decisions = (tables(text.split('\n## Decisions')[1] ?? '')[0] ?? []).map(r => ({ ...r, 'Applies to': [here, ...list(r['Applies to'])].join(', '), file: `spec/flows/${file}` }));
   return {
     name: file.replace(/\.md$/, ''), file: `spec/flows/${file}`, title: text.split('\n')[0].replace(/^# Flow: /, ''),
     trigger: top.Trigger ?? '', ends: top.Ends ?? '', roles: list(top.Roles), goals: list(top.Goals), steps, evals, decisions,

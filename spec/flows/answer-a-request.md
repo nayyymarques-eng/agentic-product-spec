@@ -34,7 +34,7 @@ What the flow must do that no screen shows. Each row is one eval: the facts, and
 
 ## Decisions
 
-The decisions only this feature needs. They apply to this flow and the screens its steps land on.
+The feature decision log: every decision made for this feature. Each applies to this flow and the screens its steps land on. When another feature follows one too, add an Applies to column that names it.
 
 | ID | Decision | Why | Decided by | Date |
 |---|---|---|---|---|

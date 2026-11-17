@@ -2,7 +2,7 @@
 
 The product decisions: choices the team made on purpose, so nobody flags them as errors and nobody has to ask again. A decision can come from user research, a market insight, the business strategy or a technical limit. None may go against an external rule in `sources/`.
 
-Decisions live at two levels. This log holds the ones the whole product shares: "Applies to" says `product`, or names the flows and screens it touches. A decision only one feature needs lives in that flow's file, under `## Decisions`, and applies to that flow and the screens its steps land on. When a decision is no longer true, it moves to `decisions-replaced.md`, with the ID of the one that replaces it.
+Decisions live at two levels. This is the product decision log: decisions about the whole product, made for no single feature. "Applies to" says `product`, or names the flows and screens it touches. Every decision made for a feature lives in that feature's decision log, in its flow file under `## Decisions`, even when other features follow it too. When a decision is no longer true, it moves to `decisions-replaced.md`, with the ID of the one that replaces it.
 
 | ID | Decision | Why | Decided by | Applies to | Date |
 |---|---|---|---|---|---|
