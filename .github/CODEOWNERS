@@ -5,7 +5,7 @@
 # Default: the product designer approves any change to the spec.
 # /spec/                  @your-org/product-design
 
-# The official rules: someone who can read the law, the regulator's guidance or the contract.
+# The external rules: someone who can read the law, the regulator's guidance or the contract.
 # /spec/sources/          @your-org/legal
 
 # The product decisions and the open questions: product.

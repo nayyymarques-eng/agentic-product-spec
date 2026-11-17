@@ -2,7 +2,7 @@
 
 A set of files that hold everything a product knows that an agent cannot find in the code, and scripts that check the product against them.
 
-- **The spec** is a folder of text files, in two levels. The product level says who the users are, the official rules, the product decisions and the business rules. The feature level says the steps of each task and what each screen shows in each situation.
+- **The spec** is a folder of text files, in two levels. The product level says who the users are, the external rules, the product decisions and the business rules. The feature level says the steps of each task and what each screen shows in each situation.
 - **The checks** are scripts. They check that the spec is complete, that the built screen does what the spec says, and that the screen uses the design system correctly.
 - **The handoff** is a file written by a script from the spec, for anyone who builds from it: the rules, the steps of the task, the screen's states and one acceptance test per eval.
 
@@ -20,10 +20,10 @@ One spec per product, in the `spec/` folder.
 
 | Level | What it holds | Where |
 |---|---|---|
-| Product | What holds for every feature: the roles (kinds of user) and their persona sheets, the goals of each role, the official rules, the product decisions, the business rules with their sources, the open questions and a glossary | `spec/roles.md`, `personas/`, `goals.md`, `sources/`, `decisions.md`, `rules.md`, `questions.md`, `glossary.md` |
+| Product | What holds for every feature: the roles (kinds of user) and their persona sheets, the goals of each role, the external rules, the product decisions, the business rules with their sources, the open questions and a glossary | `spec/roles.md`, `personas/`, `goals.md`, `sources/`, `decisions.md`, `rules.md`, `questions.md`, `glossary.md` |
 | Feature | What each feature does: one file per task, with each step, who acts and the screen state it lands on; one file per screen, with every state and a table of evals | `spec/flows/`, `spec/screens/` |
 
-Every item has an ID: roles R-01, goals G-01, official rules PRIV-01, decisions D-01, business rules BR-01, questions Q-01, flow steps F-01, screen states ST-01, evals E-01. Code, checks and the handoff cite these IDs, so a search for an ID finds everything that uses it.
+Every item has an ID: roles R-01, goals G-01, external rules PRIV-01, decisions D-01, business rules BR-01, questions Q-01, flow steps F-01, screen states ST-01, evals E-01. Code, checks and the handoff cite these IDs, so a search for an ID finds everything that uses it.
 
 ## Ways to use it
 
@@ -35,8 +35,8 @@ The spec is written once and used in several ways. Each one reads the same files
 | Change a feature | A law changes, a product decision is made, or someone finds a problem. Change the spec first: the rule, the step, the state and an eval that shows the change. Then the screen. If the spec merges first, mark the new state "Built: not yet"; the checks skip it until the screen is built. A decision that changes moves to `decisions-replaced.md`, and the spec check names everything that still cites it. |
 | Start from what you have | For a product that already exists: write the flow of one task as the product does it today, from the code and the screens. Each choice you find becomes a decision, and each thing nobody can explain becomes a question. Then the next task. |
 | QA | Run the evals against the built screen (`npm run behaviour`). Each failure names the eval and what differs from the spec. |
-| Review before building | A synthetic user reads a feature as each role, against the official rules and the persona sheets, three times; the findings two runs agree on are kept (`reviews/README.md`). |
-| Keep the official rules current | The rules watch (`.claude/agents/rules-watch.md`) reads the official sources on a schedule and lists everything that depends on a rule that changed. It belongs to the spec: a synthetic user reads the rules from here. |
+| Review before building | A synthetic user reads a feature as each role, against the external rules and the persona sheets, three times; the findings two runs agree on are kept (`reviews/README.md`). |
+| Keep the external rules current | Optional, for products whose external rules change often, such as regulated ones. The rules watch (`.claude/agents/rules-watch.md`) reads the sources on a schedule and lists everything that depends on a rule that changed. It belongs to the spec: a synthetic user reads the rules from here. |
 | Hand it to the backend | `npm run handoff` writes the rules, the flow and one acceptance test per eval, for whoever builds the backend. |
 | Give an agent one feature | `npm run context answer-a-request` prints that feature's flow and screens, and only the rules, decisions, questions and persona sheets they touch. The agent reads that, not the whole spec. |
 | Answer a question | Search for an ID, such as BR-02, to find every flow, state, eval and line of code that uses it. |
@@ -149,7 +149,7 @@ The smallest start: one flow, the screen it lands on, and five evals.
 - The behaviour check looks at the screen once per eval, as a still screen. It does not click through the flow, or test timing, focus or the keyboard.
 - It does not test usability or say what to build.
 - It was built on one flow and one screen of a made-up product. It has not been tried on a large product or by a team.
-- The official rules in `spec/sources/` are marked "to confirm": nobody has read the GDPR text for this example. The persona sheets are made up.
+- The external rules in `spec/sources/` are marked "to confirm": nobody has read the GDPR text for this example. The persona sheets are made up.
 
 ## License
 

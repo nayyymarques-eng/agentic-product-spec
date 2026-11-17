@@ -1,5 +1,5 @@
 // Prints the part of the spec one feature needs, and nothing else: its flows, its screens with every state,
-// and only the rules, decisions, open questions, goals, roles, persona sheets and official rules they cite
+// and only the rules, decisions, open questions, goals, roles, persona sheets and external rules they cite
 // or that name them. The glossary comes whole, because a word means the same thing everywhere.
 // Usage: npm run context <flow or screen>, such as: npm run context answer-a-request
 import { readFileSync } from 'node:fs';
@@ -52,7 +52,7 @@ const out = [
   rows('Business rules', 'spec/rules.md', spec.rules),
   rows('Product decisions', 'spec/decisions.md', spec.decisions),
   rows('Open questions', 'spec/questions.md', spec.questions),
-  rows('Official rules', 'spec/sources/', spec.sources),
+  rows('External rules', 'spec/sources/', spec.sources),
   rows('Goals', 'spec/goals.md', spec.goals),
   rows('Roles', 'spec/roles.md', spec.roles),
   ...personas.map(p => read(join('spec', p))),

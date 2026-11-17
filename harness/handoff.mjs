@@ -107,7 +107,7 @@ for (const s of spec.screens) {
     '',
     ...[...cited].filter(id => id.startsWith('Q-')).sort().map(id => `- **${id}.** ${byId.get(id).Question} Meanwhile, ${byId.get(id).Meanwhile.charAt(0).toLowerCase()}${byId.get(id).Meanwhile.slice(1)}.`),
     '',
-    '## Official rules',
+    '## External rules',
     '',
     ...[...cited].filter(id => byId.get(id)?.file).sort().map(id => `- **${id}** (${byId.get(id).Source}, ${byId.get(id).Mark}): ${byId.get(id).Rule}`),
     '',

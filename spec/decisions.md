@@ -1,6 +1,6 @@
 # Decisions
 
-The product decisions: choices the team made on purpose, so nobody flags them as errors and nobody has to ask again. A decision can come from user research, a market insight, the business strategy or a technical limit. None may go against an official rule in `sources/`.
+The product decisions: choices the team made on purpose, so nobody flags them as errors and nobody has to ask again. A decision can come from user research, a market insight, the business strategy or a technical limit. None may go against an external rule in `sources/`.
 
 There is one log for the whole product, even for a decision made while one flow was written, because a decision made for one flow often holds for others. "Applies to" names the flows and screens it touches, so a search finds it from either side. A decision can hold for the whole product or for one feature only: "Applies to" says which. When a decision is no longer true, it moves to `decisions-replaced.md`, with the ID of the one that replaces it.
 

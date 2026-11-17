@@ -2,7 +2,7 @@
 
 Example for a made-up product: an inbox where a shop's privacy lead receives, tracks and answers requests from people about their personal data, under the EU General Data Protection Regulation (GDPR).
 
-Every rule here is `to confirm`. No person has read the official text for this example yet, and the agent that drafted it could not open EUR-Lex from its session. Read Articles 12 and 15 before you rely on any row. "Check again on" is six months from the day the agent drafted the page, 2026-11-12.
+Every rule here is `to confirm`. No person has read the source text for this example yet, and the agent that drafted it could not open EUR-Lex from its session. Read Articles 12 and 15 before you rely on any row. "Check again on" is six months from the day the agent drafted the page, 2026-11-12.
 
 Source for every row: Regulation (EU) 2016/679, https://eur-lex.europa.eu/eli/reg/2016/679/oj
 

@@ -1,6 +1,6 @@
 # Business rules
 
-What the product must do, one rule per row, each with the sources it comes from: the official rules (PRIV-, in `sources/`), the decisions (D-), the goals (G-), the roles (R-) and the open questions (Q-). Where says which screens apply it.
+What the product must do, one rule per row, each with the sources it comes from: the external rules (PRIV-, in `sources/`), the decisions (D-), the goals (G-), the roles (R-) and the open questions (Q-). Where says which screens apply it.
 
 | ID | Rule | Sources | Where |
 |---|---|---|---|

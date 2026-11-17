@@ -1,6 +1,6 @@
 # The spec
 
-This folder is everything the product knows that an agent cannot look up in the code: who the users are, the official rules, the product decisions, the business rules, and what each feature does. It is written once. AI tools build from it, a synthetic user reviews it, and the checks test the product against it. It says nothing about how a screen looks: the design system says that.
+This folder is everything the product knows that an agent cannot look up in the code: who the users are, the external rules, the product decisions, the business rules, and what each feature does. It is written once. AI tools build from it, a synthetic user reviews it, and the checks test the product against it. It says nothing about how a screen looks: the design system says that.
 
 The spec has two levels.
 
@@ -16,10 +16,10 @@ Everything in this folder is an example for a made-up product: an inbox where a 
 | `roles.md` | Who uses the product, what each role may see and do, and its persona sheet | R-01 |
 | `personas/` | One persona sheet per role, from interviews: each trait with its source and how many interviews say it | none |
 | `goals.md` | What each role comes to the product to get done | G-01 |
-| `sources/` | The official rules: laws, regulator guidance and contracts, each with its official text. Written once, here. The synthetic user and the rules watch read them here | PRIV-01 |
+| `sources/` | The external rules: laws, regulator guidance, contracts, platform policies and standards, each with its source text. Written once, here. The synthetic user and the rules watch read them here | PRIV-01 |
 | `decisions.md` | The product decisions: choices the team made on purpose, with why, who decided, when, and the flows and screens they apply to | D-01 |
 | `decisions-replaced.md` | Decisions that are no longer true, each with the decision that replaced it. Nothing may cite them | D-01 |
-| `rules.md` | The business rules: what the product does, each citing the official rules, decisions, goals or roles it comes from | BR-01 |
+| `rules.md` | The business rules: what the product does, each citing the external rules, decisions, goals or roles it comes from | BR-01 |
 | `questions.md` | What nobody has answered yet, who will, what the product does meanwhile, and the flows and screens it applies to | Q-01 |
 | `glossary.md` | What each thing in the product is today, in one line, and the decision behind it | none |
 
@@ -42,7 +42,7 @@ One row per rule in `rules.md`:
 |---|---|
 | ID | BR- and a number |
 | Rule | One rule, in plain words, that you can pass or fail |
-| Sources | The official rules, decisions, goals or roles it comes from, by ID. A rule with no source is an opinion: it goes to `questions.md` first |
+| Sources | The external rules, decisions, goals or roles it comes from, by ID. A rule with no source is an opinion: it goes to `questions.md` first |
 | Where | The screens that apply it |
 
 ## How a decision is written
@@ -53,7 +53,7 @@ One row per decision in `decisions.md`. There is one log for the whole product, 
 |---|---|
 | ID | D- and a number |
 | Decision | The choice, in plain words |
-| Why | The reason, and where it came from: user research, a market insight, the business strategy, a technical limit. A decision never goes against an official rule |
+| Why | The reason, and where it came from: user research, a market insight, the business strategy, a technical limit. A decision never goes against an external rule |
 | Decided by | Who made it |
 | Applies to | The flows and screens it touches, by file name |
 | Date | When it was made |
@@ -138,9 +138,9 @@ The examples table is the exact truth. Each row is one eval, with the facts that
 
 | Gate | When | What it checks | Run |
 |---|---|---|---|
-| Spec check | Every change to the spec | IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and every state is reached, every state and every rule covered by an eval, nothing cites a replaced decision, no open question reaches beyond one feature, every component named exists in the design system. It also lists official rules still "to confirm" past their "Check again on" date | `npm run spec` |
-| Spec review | Before the screen is built | A synthetic user reads a feature's flow, screens and evals as each role, against the official rules and the persona sheets, and respects the decisions. Run three times; keep what two runs agree on | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
-| Rules watch | On a schedule | Reads the official sources again, turns a changed rule back to "to confirm", and lists everything that depends on it | `.claude/agents/rules-watch.md` |
+| Spec check | Every change to the spec | IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and every state is reached, every state and every rule covered by an eval, nothing cites a replaced decision, no open question reaches beyond one feature, every component named exists in the design system. It also lists external rules still "to confirm" past their "Check again on" date | `npm run spec` |
+| Spec review | Before the screen is built | A synthetic user reads a feature's flow, screens and evals as each role, against the external rules and the persona sheets, and respects the decisions. Run three times; keep what two runs agree on | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
+| Rules watch, optional | On a schedule, when the external rules change often, as in a regulated product | Reads the sources again, turns a changed rule back to "to confirm", and lists everything that depends on it | `.claude/agents/rules-watch.md` |
 | Behaviour check | Every pull request that touches the screen | The built screen against every state and every example, and every rule a state applies named in the screen's code | `npm run behaviour` |
 | Design system check | Every pull request that touches the screen | How each state looks, with the design system's own harness | `npm run look` |
 | Context | Before an agent builds, reviews or tests a feature | Nothing: it prints the feature's part of the spec, following the IDs each state cites and each decision's Applies to | `npm run context <flow or screen>` |

@@ -161,15 +161,15 @@ for (const f of spec.flows) for (const e of f.evals) {
   for (const id of e.rules) if (!spec.rules.some(r => r.ID === id)) fail('SPEC-13', `${e.Example} cites ${id}, which is not a rule`, f.file);
 }
 
-// An official rule still "to confirm" after its "Check again on" date is a warning, not a failure: someone reads
-// the official text, or moves the date with a reason.
+// An external rule still "to confirm" after its "Check again on" date is a warning, not a failure: someone reads
+// the source text, or moves the date with a reason.
 const today = new Date().toISOString().slice(0, 10);
 const stale = spec.sources.filter(r => /to confirm/i.test(r.Mark ?? '') && r['Check again on'] && r['Check again on'] < today)
   .map(r => `${r.ID} is still "to confirm", and was due to be checked again on ${r['Check again on']}  ← ${r.file}`);
 
 const counts = spec.screens.map(s => `${s.name}: ${s.states.length} states, ${s.examples.length} examples`).join('; ');
 console.log(`Spec: ${spec.flows.length} flow, ${spec.rules.length} rules, ${spec.goals.length} goals, ${spec.decisions.length} decisions, ${spec.questions.length} open questions, ${spec.flows.reduce((n, f) => n + f.evals.length, 0)} flow evals. ${counts}.`);
-if (stale.length) console.log(`Official rules to read again:\n${stale.join('\n')}`);
+if (stale.length) console.log(`External rules to read again:\n${stale.join('\n')}`);
 if (triage.length) console.log(`To triage, for the design system owner:\n${[...new Set(triage)].join('\n')}`);
 if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}`); process.exit(1); }
 console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-13');

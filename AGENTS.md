@@ -15,7 +15,7 @@ Work starts from a trigger: a feature someone asks for, a rule that changes, or 
 The words a screen shows are part of the spec: each state's Status, Banner, Dialog and Says. Content that is not a screen, such as an article, an email template or a help page, lives outside the spec, and cites the decisions and rules it follows, by ID, so a search finds it when they change.
 
 ## To build or change a screen
-1. Run `npm run context <flow or screen>` and read what it prints: the flows that land on the screen, the screen with its states and examples, and only the rules, decisions, open questions, official rules, goals, roles and persona sheets they cite or that name them. Read nothing else from `spec/` unless it points you there.
+1. Run `npm run context <flow or screen>` and read what it prints: the flows that land on the screen, the screen with its states and examples, and only the rules, decisions, open questions, external rules, goals, roles and persona sheets they cite or that name them. Read nothing else from `spec/` unless it points you there.
 2. If the spec does not say what to do, stop and write the question in `spec/questions.md`. Do not guess a rule.
 3. Put the behaviour in `src/<screen>.ts`: the due date, the state and the actions, each with the rule IDs it applies. Every rule a state applies must be named by ID in `src/<screen>.ts` or `screens/<screen>.tsx`, where the code applies it; the behaviour check fails on one that is not. The screen in `screens/<screen>.tsx` only shows it, and its root carries `data-state`.
 4. Build the screen with ai-ready-design-system, as its own `AGENTS.md` says.
