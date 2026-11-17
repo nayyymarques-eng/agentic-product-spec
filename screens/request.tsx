@@ -1,6 +1,6 @@
 // Screen: Request. Spec: spec/screens/request.md. Built with ai-ready-design-system, from the detail page template.
 // The behaviour lives in src/request.ts; this file only shows it. The root carries data-state, so the checks know
-// which state the screen thinks it is in.
+// which state the screen thinks it is in. It shows no fee and no price anywhere: answering is free (BR-06).
 import { DetailPage, NavRail, Badge, Banner, Button, Card, Dialog, Field, List, ListItem, Section, Stack } from 'ai-ready-design-system/src';
 import { actionsFor, daysBetween, dueDate, short, stateOf, type Request, type View } from '../src/request';
 

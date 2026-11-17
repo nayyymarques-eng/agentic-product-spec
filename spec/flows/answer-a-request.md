@@ -19,3 +19,11 @@ From the email a person sends to the shop to the answer. One flow per job a role
 | F-06 | R-01 | Extends the due date by two months, with a reason for the person | request | ST-07, ST-04 | F-07, or F-08 when the new due date passes |
 | F-07 | R-01 | Sends the answer and marks the request as answered | request | ST-06 | end |
 | F-08 | R-01 | The due date passes with no answer | request | ST-03 | F-07 |
+
+## Evals
+
+What the flow must do that no screen shows. Each row is one eval: the facts, and what must be true after. The handoff lists them as acceptance tests for whoever builds the backend, beside the screen's evals.
+
+| Example | Given | Then | Rules |
+|---|---|---|---|
+| E-15 | The privacy lead marks a request as answered, with the date the answer was sent | The product sends no email or message to the person, and records the date the lead entered | BR-04 |

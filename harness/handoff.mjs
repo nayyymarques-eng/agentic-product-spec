@@ -41,7 +41,8 @@ function mermaid(f) {
 
 mkdirSync(join(root, 'handoff'), { recursive: true });
 for (const s of spec.screens) {
-  const rules = [...new Set(s.states.flatMap(st => st.rules))].sort().map(id => byId.get(id));
+  const flowsHere = spec.flows.filter(f => f.steps.some(x => x.screen === s.name));
+  const rules = [...new Set([...s.states.flatMap(st => st.rules), ...flowsHere.flatMap(f => f.evals.flatMap(e => e.rules))])].sort().map(id => byId.get(id));
   const cited = new Set(rules.flatMap(r => r.Sources.split(',').map(x => x.trim())));
   const lines = [
     `# Handoff: ${s.title}`,
@@ -82,13 +83,19 @@ for (const s of spec.screens) {
     '',
     '## Acceptance tests',
     '',
-    `One per example in the spec. \`npm run behaviour\` runs every one of them against the built screen.`,
+    `One per eval in the spec. \`npm run behaviour\` runs the screen's evals against the built screen.`,
     '',
     ...s.examples.flatMap(e => {
       const st = s.states.find(x => x.id === e.State);
       const acts = list(e.Actions);
       return [`- **${e.Example}.** Given ${given(e)}. Then the due date is ${day(e.Due)}, the screen is in ${e.State} ${st?.name ?? ''}, and it offers ${acts.length ? acts.join(', ') : 'no action'}.`];
     }),
+    ...spec.flows.filter(f => f.steps.some(x => x.screen === s.name) && f.evals.length).flatMap(f => [
+      '',
+      `From the flow ${f.title}, for what no screen shows. The backend's own tests run these.`,
+      '',
+      ...f.evals.map(e => `- **${e.Example}.** Given ${e.Given.charAt(0).toLowerCase()}${e.Given.slice(1)}. Then ${e.Then.charAt(0).toLowerCase()}${e.Then.slice(1)}. (${e.rules.join(', ')})`),
+    ]),
     '',
     '## Decisions behind it',
     '',

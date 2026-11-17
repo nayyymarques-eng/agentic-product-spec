@@ -1,0 +1,17 @@
+# Who must approve a change to each part of the spec before it merges. GitHub asks them for a review on every
+# pull request that touches their files; with branch protection on, the pull request cannot merge without them.
+# Replace the example teams with your own. The last matching line wins.
+
+# Default: the product designer approves any change to the spec.
+# /spec/                  @your-org/product-design
+
+# The official rules: someone who can read the law, the regulator's guidance or the contract.
+# /spec/sources/          @your-org/legal
+
+# The product decisions and the open questions: product.
+# /spec/decisions.md      @your-org/product
+# /spec/decisions-replaced.md @your-org/product
+# /spec/questions.md      @your-org/product
+
+# The persona sheets: research.
+# /spec/personas/         @your-org/research

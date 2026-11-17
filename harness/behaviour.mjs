@@ -3,7 +3,7 @@
 // Chromium and checks what shows against the state the row names. Each failure names the check, the example and where.
 // Usage: npm run behaviour
 import { createRequire } from 'node:module';
-import { readFileSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { list, readSpec, root, notBuiltYet } from './spec.mjs';
@@ -64,6 +64,11 @@ export async function checkBehaviour() {
     const inCode = new Set(code.match(/ST-\d{2}/g) ?? []);
     const inSpec = new Set(screen.states.map(s => s.id));
     for (const id of inCode) if (!inSpec.has(id)) fail('BEH-08', 'code', `the code has ${id}, which the spec does not`);
+    // BEH-09: every rule the screen's states apply is named, by ID, where the code applies it. A rule nobody can
+    // find in the code cannot be found again when it changes.
+    const view = join(root, 'screens', `${screen.name}.tsx`);
+    const both = code + (existsSync(view) ? readFileSync(view, 'utf8') : '');
+    for (const id of new Set(screen.states.flatMap(s => s.rules))) if (!new RegExp(`\\b${id}\\b`).test(both)) fail('BEH-09', 'code', `${id} is applied by a state, and named nowhere in src/${screen.name}.ts or screens/${screen.name}.tsx`);
 
     for (const { row, file, logic } of pages) {
       checked++;
@@ -112,4 +117,4 @@ const { fails, checked, waiting } = await checkBehaviour();
 console.log(`Behaviour: ${checked} examples checked.`);
 if (waiting.length) console.log(`Not built yet, so not checked: ${waiting.join('; ')}. Remove the mark in the pull request that builds it.`);
 if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}`); process.exit(1); }
-console.log('PASS: BEH-01 to BEH-08');
+console.log('PASS: BEH-01 to BEH-09');

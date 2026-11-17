@@ -24,7 +24,7 @@ const here = new Set([...flows.map(f => f.name), ...screens.map(s => s.name)]);
 const ids = new Set([
   ...flows.flatMap(f => [...f.roles, ...f.goals]),
   ...screens.flatMap(s => [...s.roles, ...s.goals, ...s.states.flatMap(st => [...st.rules, ...st.goals])]),
-  ...spec.decisions.filter(d => list(d['Applies to']).some(w => here.has(w))).map(d => d.ID),
+  ...[...spec.decisions, ...spec.questions].filter(d => list(d['Applies to']).some(w => here.has(w))).map(d => d.ID),
   ...spec.rules.filter(r => list(r.Where).some(w => here.has(w))).map(r => r.ID),
 ]);
 const all = [...spec.goals, ...spec.roles, ...spec.rules, ...spec.decisions, ...spec.questions, ...spec.sources];

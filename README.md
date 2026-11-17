@@ -32,9 +32,11 @@ The spec is written once and used in several ways. Each one reads the same files
 | Use | What happens |
 |---|---|
 | Build a new feature | Write the flow first, then the states it lands on and their evals. An AI tool builds the screen from them, with the design system. |
-| Change a feature | A law changes, a product decision is made, or someone finds a problem. Change the spec first: the rule, the step, the state and an eval that shows the change. Then the screen. If the spec merges first, mark the new state "Built: not yet"; the checks skip it until the screen is built. |
+| Change a feature | A law changes, a product decision is made, or someone finds a problem. Change the spec first: the rule, the step, the state and an eval that shows the change. Then the screen. If the spec merges first, mark the new state "Built: not yet"; the checks skip it until the screen is built. A decision that changes moves to `decisions-replaced.md`, and the spec check names everything that still cites it. |
+| Start from what you have | For a product that already exists: write the flow of one task as the product does it today, from the code and the screens. Each choice you find becomes a decision, and each thing nobody can explain becomes a question. Then the next task. |
 | QA | Run the evals against the built screen (`npm run behaviour`). Each failure names the eval and what differs from the spec. |
-| Review before building | A synthetic user reads a feature as each role, against the official rules and the persona sheets (`reviews/README.md`). |
+| Review before building | A synthetic user reads a feature as each role, against the official rules and the persona sheets, three times; the findings two runs agree on are kept (`reviews/README.md`). |
+| Keep the official rules current | The rules watch (`.claude/agents/rules-watch.md`) reads the official sources on a schedule and lists everything that depends on a rule that changed. It belongs to the spec: a synthetic user reads the rules from here. |
 | Hand it to the backend | `npm run handoff` writes the rules, the flow and one acceptance test per eval, for whoever builds the backend. |
 | Give an agent one feature | `npm run context answer-a-request` prints that feature's flow and screens, and only the rules, decisions, questions and persona sheets they touch. The agent reads that, not the whole spec. |
 | Answer a question | Search for an ID, such as BR-02, to find every flow, state, eval and line of code that uses it. |
@@ -45,7 +47,7 @@ The files in `spec/` describe a made-up product, so the kit has something real t
 
 The product is an inbox where a shop's privacy lead answers people's requests for a copy of their personal data, under the GDPR. The legal time to answer is one month, and it can be extended once by two months. The synthetic user in [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) reviews this same spec.
 
-- **One flow**, `spec/flows/answer-a-request.md`: it starts when a person emails the shop, and ends when they have the answer. 8 steps.
+- **One flow**, `spec/flows/answer-a-request.md`: it starts when a person emails the shop, and ends when they have the answer. 8 steps, and 1 eval for what no screen shows.
 - **One screen**, `spec/screens/request.md`: one request, as the privacy lead or the support agent sees it. 8 states and 14 evals.
 
 The flow, as the handoff draws it:
@@ -79,6 +81,10 @@ Each break below was made on purpose, one at a time. Each line is what the check
 | A fee appears on the screen | `BEH-06 E-14 (shows "€")` |
 | Extend can be used before the reason is written | `BEH-05 E-07 ("Extend" is primary, the spec says primary, disabled)` |
 | The code has a state the spec does not have | `BEH-08 code (the code has ST-09, which the spec does not)` |
+| A rule a state applies is named nowhere in the code | `BEH-09 code (BR-06 is applied by a state, and named nowhere in src/request.ts or screens/request.tsx)` |
+| A rule cites a decision that was replaced | `SPEC-11 (BR-02 cites D-07, which was replaced by D-04)` |
+| An open question reaches a second flow | `SPEC-12 (Q-01 reaches beyond one feature (answer-a-request, close-a-request); answer it, as a decision, before this merges)` |
+| A rule has no eval | `SPEC-13 (BR-09 has no eval; add an example on a state that applies it, or a flow eval)` |
 | A rule cites a decision that does not exist | `SPEC-02 (BR-07 cites D-09, which does not exist)` |
 | No state applies a rule | `SPEC-03 (BR-08 is applied by no state of request)` |
 | A state uses a badge the design system does not have | `SPEC-05 (ST-06: badge "success" is not a badge variant)` |
@@ -100,8 +106,11 @@ SPEC-07 ST-07 ("Extend" is disabled; the button contract has no disabled state)
 | `spec/personas/` | One persona sheet per role, with made-up data |
 | `src/request.ts` | The behaviour of the example screen in code: how the due date is counted, which state applies, which buttons show. Each part cites the rule IDs it applies |
 | `screens/request.tsx` | The example screen, built with [ai-ready-design-system](https://github.com/nayyymarques-eng/ai-ready-design-system) |
-| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-10 |
-| `harness/behaviour.mjs` | The behaviour check: BEH-01 to BEH-08 |
+| `harness/spec-check.mjs` | The spec check: SPEC-01 to SPEC-13 |
+| `harness/behaviour.mjs` | The behaviour check: BEH-01 to BEH-09 |
+| `harness/context.mjs` | `npm run context`: one feature's part of the spec, for an agent |
+| `.claude/agents/rules-watch.md` | The rules watch, run on a schedule |
+| `.github/CODEOWNERS` | Who approves a change to each part of the spec. The lines are examples, commented out |
 | `harness/look.mjs` | Runs the design system's checks on every state |
 | `harness/handoff.mjs` | Writes `handoff/` from the spec |
 | `handoff/request.md` | The handoff for the example screen, written by the script |
@@ -135,7 +144,8 @@ The smallest start: one flow, the screen it lands on, and five evals.
 ## Limits
 
 - The spec is only as right as the people who write and approve it. The checks find what is missing or inconsistent, not a wrong rule.
-- The evals are tests of the situations someone wrote down. A situation nobody wrote down is not checked.
+- The evals are tests of the situations someone wrote down. A situation nobody wrote down is not checked. Flow evals are listed for the backend's tests; this kit does not run them.
+- The spec review is an AI model reading the spec. Three runs reduce what one run misses or invents; they do not remove it.
 - The behaviour check looks at the screen once per eval, as a still screen. It does not click through the flow, or test timing, focus or the keyboard.
 - It does not test usability or say what to build.
 - It was built on one flow and one screen of a made-up product. It has not been tried on a large product or by a team.

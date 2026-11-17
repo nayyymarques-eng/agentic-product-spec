@@ -1,5 +1,5 @@
 // Reads the spec folder into one object the checks and the handoff use. Nothing here judges the spec.
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -116,15 +116,17 @@ function flow(file) {
     id: r.Step, who: r.Who, what: r['What happens'], screen: r.Screen === '-' ? '' : r.Screen,
     states: list(r.States), next: r.Next, to: [...r.Next.matchAll(/F-\d{2}/g)].map(m => m[0]), ends: /\bend\b/.test(r.Next),
   }));
+  // Evals for what the flow does that no screen shows, such as a message the product must never send.
+  const evals = (tables(text.split('\n## Evals')[1] ?? '')[0] ?? []).map(r => ({ ...r, rules: list(r.Rules) }));
   return {
     name: file.replace(/\.md$/, ''), file: `spec/flows/${file}`, title: text.split('\n')[0].replace(/^# Flow: /, ''),
-    trigger: top.Trigger ?? '', ends: top.Ends ?? '', roles: list(top.Roles), goals: list(top.Goals), steps,
+    trigger: top.Trigger ?? '', ends: top.Ends ?? '', roles: list(top.Roles), goals: list(top.Goals), steps, evals,
   };
 }
 
-const table = file => tables(readFileSync(join(specDir, file), 'utf8'))[0] ?? [];
+const table = file => existsSync(join(specDir, file)) ? tables(readFileSync(join(specDir, file), 'utf8'))[0] ?? [] : [];
 
-/** What the spec marks as not built yet, in words: "request (whole screen)" or "request ST-09 (E-15, E-16)". */
+/** What the spec marks as not built yet, in words: "request (whole screen)" or "request ST-09 (E-20, E-21)". */
 export function notBuiltYet(spec) {
   return spec.screens.flatMap(s => s.notBuilt ? [`${s.name} (whole screen)`]
     : s.states.filter(st => st.notBuilt).map(st => `${s.name} ${st.id} (${s.examples.filter(e => e.State === st.id).map(e => e.Example).join(', ') || 'no eval'})`));
@@ -136,6 +138,7 @@ export function readSpec() {
     .flatMap(f => (tables(readFileSync(join(specDir, 'sources', f), 'utf8'))[0] ?? []).map(r => ({ ...r, file: `spec/sources/${f}` })));
   return {
     goals: table('goals.md'), roles: table('roles.md'), rules: table('rules.md'), decisions: table('decisions.md'),
+    replaced: table('decisions-replaced.md'),
     questions: table('questions.md'), glossary: table('glossary.md'), sources,
     flows: readdirSync(join(specDir, 'flows')).filter(f => f.endsWith('.md')).sort().map(flow),
     screens: readdirSync(join(specDir, 'screens')).filter(f => f.endsWith('.md')).sort().map(screen),

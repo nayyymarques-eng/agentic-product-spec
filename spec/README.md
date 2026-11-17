@@ -18,18 +18,21 @@ Everything in this folder is an example for a made-up product: an inbox where a 
 | `goals.md` | What each role comes to the product to get done | G-01 |
 | `sources/` | The official rules: laws, regulator guidance and contracts, each with its official text. Written once, here. The synthetic user and the rules watch read them here | PRIV-01 |
 | `decisions.md` | The product decisions: choices the team made on purpose, with why, who decided, when, and the flows and screens they apply to | D-01 |
+| `decisions-replaced.md` | Decisions that are no longer true, each with the decision that replaced it. Nothing may cite them | D-01 |
 | `rules.md` | The business rules: what the product does, each citing the official rules, decisions, goals or roles it comes from | BR-01 |
-| `questions.md` | What nobody has answered yet, who will, and what the product does meanwhile | Q-01 |
+| `questions.md` | What nobody has answered yet, who will, what the product does meanwhile, and the flows and screens it applies to | Q-01 |
 | `glossary.md` | What each thing in the product is today, in one line, and the decision behind it | none |
 
 ## The feature level
 
 | Folder | What it holds | IDs |
 |---|---|---|
-| `flows/` | One file per task a role comes to do: what starts it, each step, who acts, and the screen and state each step lands on | F-01 |
+| `flows/` | One file per task a role comes to do: what starts it, each step, who acts, the screen and state each step lands on, and evals for what no screen shows | F-01, E-01 |
 | `screens/` | One file per screen: its states, and evals that say exactly which state and which actions each situation gets | ST-01, E-01 |
 
-An ID never changes when the wording does. Everything that uses a rule, a goal or a state cites its ID: the code, the checks, the handoff and the reviews. A search for an ID finds everything to look at again when it changes.
+An ID never changes when the wording does. Everything that uses a rule, a goal or a state cites its ID: the code, the checks, the handoff and the reviews. A search for an ID finds everything to look at again when it changes. The checks hold the code to it: every rule a state applies must be named by ID in that screen's code.
+
+The words a screen shows live here, in its states. Content that is not a screen, such as an article or an email template, lives outside the spec and cites the decisions and rules it follows, by ID.
 
 ## How a rule is written
 
@@ -53,9 +56,11 @@ One row per decision in `decisions.md`. There is one log for the whole product, 
 | Why | The reason, and where it came from: user research, a market insight, the business strategy, a technical limit. A decision never goes against an official rule |
 | Decided by | Who made it |
 | Applies to | The flows and screens it touches, by file name |
-| Date | When it was made. A decision that replaces another says so, and the old one stays, marked "replaced" |
+| Date | When it was made |
 
-A business rule cites the decisions it follows, by ID. When an open question is answered, the answer becomes a decision.
+A decision can hold for the whole product or for one feature: "Applies to" says which, and two features can decide differently. When a decision is no longer true, its row moves to `decisions-replaced.md`, with two more columns: the decision that replaced it and the date. The spec check then fails on anything that still cites the old one, so each place that followed it is looked at again.
+
+A business rule cites the decisions it follows, by ID. When an open question is answered, the answer becomes a decision. An open question names the flows and screens it applies to: it may stay open inside one feature, but one that reaches further is answered before the change merges.
 
 ## How a flow is written
 
@@ -85,6 +90,15 @@ An example row, from `flows/answer-a-request.md`:
 ```
 
 The spec check reads the flow both ways: every step must land on a state that exists, and every state must be reached by a step. A state no step reaches means a step is missing, or the state should not exist.
+
+Some of what a flow does shows on no screen, such as a message the product must never send. It gets an eval under `## Evals`, in the flow file:
+
+```
+| Example | Given | Then | Rules |
+| E-15 | The privacy lead marks a request as answered, with the date the answer was sent | The product sends no email or message to the person, and records the date the lead entered | BR-04 |
+```
+
+Every business rule needs at least one eval, on a screen or in a flow. The handoff lists flow evals as acceptance tests for whoever builds the backend.
 
 ## How a screen is written
 
@@ -124,9 +138,12 @@ The examples table is the exact truth. Each row is one eval, with the facts that
 
 | Gate | When | What it checks | Run |
 |---|---|---|---|
-| Spec check | Every change to the spec | IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and every state is reached, every state covered by an eval, every component named exists in the design system | `npm run spec` |
-| Spec review | Before the screen is built | A synthetic user reads a feature's flow, screens and evals as each role, against the official rules and the persona sheets, and respects the decisions | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
-| Behaviour check | Every pull request that touches the screen | The built screen against every state and every example | `npm run behaviour` |
+| Spec check | Every change to the spec | IDs, sources, every rule and goal used, every decision applies to a flow or screen that exists, every role has a persona sheet, every step of a flow lands on a state and every state is reached, every state and every rule covered by an eval, nothing cites a replaced decision, no open question reaches beyond one feature, every component named exists in the design system. It also lists official rules still "to confirm" past their "Check again on" date | `npm run spec` |
+| Spec review | Before the screen is built | A synthetic user reads a feature's flow, screens and evals as each role, against the official rules and the persona sheets, and respects the decisions. Run three times; keep what two runs agree on | [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) |
+| Rules watch | On a schedule | Reads the official sources again, turns a changed rule back to "to confirm", and lists everything that depends on it | `.claude/agents/rules-watch.md` |
+| Behaviour check | Every pull request that touches the screen | The built screen against every state and every example, and every rule a state applies named in the screen's code | `npm run behaviour` |
 | Design system check | Every pull request that touches the screen | How each state looks, with the design system's own harness | `npm run look` |
 | Context | Before an agent builds, reviews or tests a feature | Nothing: it prints the feature's part of the spec, following the IDs each state cites and each decision's Applies to | `npm run context <flow or screen>` |
 | Handoff | Every change to the spec | Writes the handoff from the spec, for whoever builds the backend | `npm run handoff` |
+
+Who must approve a change to each part, such as legal for `sources/` and product for `decisions.md`, is set in `.github/CODEOWNERS`.
