@@ -7,6 +7,8 @@ import { dialogShown, list, readSpec, root } from './spec.mjs';
 
 const spec = readSpec();
 const byId = new Map([...spec.goals, ...spec.roles, ...spec.rules, ...spec.decisions, ...spec.questions, ...spec.sources].map(r => [r.ID, r]));
+// External rules come only from spec/sources/. Decisions also carry their file, so the file alone does not tell them apart.
+const external = new Set(spec.sources.map(r => r.ID));
 const roleName = id => byId.get(id)?.Role ?? id;
 const day = d => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 // The external rules still "to confirm" behind a list of business rules: a test built on them may change.
@@ -138,9 +140,12 @@ for (const s of spec.screens) {
     '',
     '## External rules',
     '',
-    ...[...cited].filter(id => byId.get(id)?.file).sort().map(id => `- **${id}** (${byId.get(id).Source}, ${byId.get(id).Mark}): ${byId.get(id).Rule}`),
+    ...[...cited].filter(id => external.has(id)).sort().map(id => `- **${id}** (${byId.get(id).Source}, ${byId.get(id).Mark}): ${byId.get(id).Rule}`),
     '',
   ];
+  // A field the script reads that the spec does not have comes out as "undefined". Fail, rather than hand it over.
+  const missing = lines.filter(l => /\bundefined\b/.test(l));
+  if (missing.length) { console.error(`handoff/${s.name}.md: a field is missing in:\n${missing.join('\n')}`); process.exit(1); }
   writeFileSync(join(root, 'handoff', `${s.name}.md`), lines.join('\n'));
   console.log(`handoff/${s.name}.md`);
 }
