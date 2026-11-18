@@ -32,12 +32,17 @@ function mermaid(f) {
     out.push(x.screen ? `  ${node(x.id)}["${text}"]` : `  ${node(x.id)}{"${text}"}`);
   }
   for (const x of f.steps) {
-    for (const part of x.next.split(/;|, or /).map(p => p.trim())) {
+    // A step's Next lists its ways on, split by ";" or by a comma before the next step ("F-05 when ..., F-06 to ..., or F-08 when ...").
+    const drawn = [];
+    for (const part of x.next.split(/;|,\s*(?:or\s+)?(?=F-\d{2})/).map(p => p.trim())) {
       const to = part.match(/F-\d{2}/)?.[0];
       if (!to) continue;
+      drawn.push(to);
       const why = part.replace(to, '').replace(':', '').trim();
       out.push(why ? `  ${node(x.id)} -- "${label(why)}" --> ${node(to)}` : `  ${node(x.id)} --> ${node(to)}`);
     }
+    const lost = x.to.filter(to => !drawn.includes(to));
+    if (lost.length) { console.error(`handoff: ${x.id}'s Next names ${lost.join(', ')}, and the flowchart has no arrow to it`); process.exit(1); }
     if (x.ends) out.push(`  ${node(x.id)} --> E(["${label(f.ends)}"])`);
   }
   out.push('```');

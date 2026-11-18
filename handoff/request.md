@@ -32,7 +32,8 @@ flowchart TD
   F02 -- "when the due date passes" --> F08
   F03 -- "yes" --> F05
   F03 -- "no" --> F04
-  F04 -- "when the proof arrives, F-06 to extend while waiting" --> F05
+  F04 -- "when the proof arrives" --> F05
+  F04 -- "to extend while waiting" --> F06
   F04 -- "when the due date passes" --> F08
   F05 -- "yes" --> F07
   F05 -- "no, and not extended yet" --> F06

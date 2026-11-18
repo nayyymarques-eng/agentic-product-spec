@@ -57,17 +57,18 @@ The flow, as the handoff draws it:
 ```mermaid
 flowchart TD
   T(["A person emails the shop for a copy of their personal data"])
-  T --> F01["F-01 The support agent sends the email to the privacy lead<br/>ST-07"]
+  T --> F01["F-01 The support agent reads the email and sends it to the privacy lead<br/>ST-07"]
   F01 --> F02["F-02 The privacy lead opens the request and sees its due date<br/>ST-01, ST-02, ST-03"]
   F02 --> F03{"F-03 Is it clear who the person is?"}
   F03 -- "no" --> F04["F-04 Writes the doubt, asks for proof of identity, and waits<br/>DL-02, ST-05, ST-08"]
   F03 -- "yes" --> F05{"F-05 Can the answer go out by the due date?"}
   F04 -- "proof arrives" --> F05
   F04 -- "to extend while waiting" --> F06
-  F05 -- "no" --> F06["F-06 Extends the due date by two months, with a reason<br/>DL-01, ST-04"]
+  F05 -- "no, not extended yet" --> F06["F-06 Extends the due date by two months, with a reason<br/>DL-01, ST-04, ST-02, ST-05, ST-08"]
   F05 -- "yes" --> F07["F-07 Sends the answer, and records the date it was sent<br/>DL-03, ST-06, ST-10"]
   F06 --> F07
-  F02 & F04 & F06 -- "the due date passes" --> F08["F-08 Overdue<br/>ST-03, ST-09"]
+  F02 & F04 & F06 -- "the due date passes" --> F08["F-08 The due date passes with no answer<br/>ST-03, ST-09"]
+  F05 -- "no, already extended" --> F08
   F08 --> F07
   F07 --> E(["The privacy lead has recorded the date the answer was sent"])
 ```
@@ -88,10 +89,10 @@ Each break below was made on purpose, one at a time. Each line is what the check
 | The code has a state the spec does not have | `BEH-08 code (the code has ST-14, which the spec does not)` |
 | A rule a state applies is named nowhere in the code | `BEH-09 code (BR-06 is applied by a state, and named nowhere in src/request.ts or screens/request.tsx)` |
 | A rule cites a decision that was replaced | `SPEC-11 (BR-02 cites D-03, which was replaced by D-09)` |
-| An open question reaches a second flow | `SPEC-12 (Q-01 reaches beyond one feature (answer-a-request, close-a-request); answer it, as a decision, before this merges)` |
+| An open question reaches a second flow | `SPEC-12 (Q-01 reaches beyond one feature (answer-a-request, close-a-request, request); answer it, as a decision, before this merges)` |
 | A rule has no eval | `SPEC-13 (BR-09 has no eval; add an eval on a state that applies it, or a flow eval)` |
-| A rule cites a decision that does not exist | `SPEC-02 (BR-07 cites D-10, which does not exist)` |
-| No state applies a rule | `SPEC-03 (BR-08 is applied by no state of request)` |
+| A rule cites a decision that does not exist | `SPEC-02 (BR-07 cites D-11, which does not exist)` |
+| No state applies a rule | `SPEC-03 (BR-08 is applied by no state or dialog of request)` |
 | A state uses a badge the design system does not have | `SPEC-05 (ST-06: badge "success" is not a badge variant)` |
 | A state has no eval | `SPEC-06 (ST-04 has no eval)` |
 | A step of the flow was removed | `SPEC-09 (ST-05 is reached by no step of a flow)` |
