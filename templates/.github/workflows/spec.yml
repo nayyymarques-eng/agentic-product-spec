@@ -1,0 +1,28 @@
+# The spec check on every pull request and on main, as a check named "spec".
+# Copy this file into .github/workflows/ in your project, push it once so the "spec" check appears,
+# and only then mark "spec" as a required status check in the main branch ruleset.
+# Actions are pinned by commit hash.
+name: Spec
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  spec:
+    name: spec # The required check matches this name exactly.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      # Installs the design system whose contracts the spec check reads (productSpec.designSystem in package.json).
+      # Remove this step if your design system's contracts are in the repository.
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      # The path to the spec check: harness/spec-check.mjs in this kit's layout,
+      # or <spec-folder>/check/spec-check.mjs if you keep it beside your spec.
+      - name: Product spec check
+        run: node harness/spec-check.mjs
