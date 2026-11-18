@@ -42,6 +42,13 @@ function rows(title, file, list) {
   const line = c => `| ${c.join(' | ')} |`;
   return `## ${title} (from ${file})\n\n${line(head)}\n${line(head.map(() => '---'))}\n${picked.map(r => line(head.map(h => r[h]))).join('\n')}`;
 }
+function replacedRows() {
+  const picked = spec.replaced.filter(r => list(r['Applies to']).some(w => here.has(w)) || ids.has(r['Replaced by']));
+  if (!picked.length) return '';
+  const head = Object.keys(picked[0]);
+  const line = c => `| ${c.join(' | ')} |`;
+  return `## Replaced decisions (from spec/decisions-replaced.md)\n\nNo longer true. Do not cite them, and do not bring one back unless you name what is new since.\n\n${line(head)}\n${line(head.map(() => '---'))}\n${picked.map(r => line(head.map(h => r[h]))).join('\n')}`;
+}
 const personas = spec.roles.filter(r => ids.has(r.ID)).map(r => r['Persona sheet'].replaceAll('`', '')).filter(Boolean);
 
 const out = [
@@ -51,6 +58,8 @@ const out = [
   ...screens.map(s => read(s.file)),
   rows('Business rules', 'spec/rules.md', spec.rules),
   rows('Product decisions', 'spec/decisions.md', spec.decisions.filter(d => d.file === 'spec/decisions.md')),
+  // Replaced decisions this feature followed, with what was learned, so an option already dropped does not come back.
+  replacedRows(),
   rows('Open questions', 'spec/questions.md', spec.questions),
   rows('External rules', 'spec/sources/', spec.sources),
   rows('Goals', 'spec/goals.md', spec.goals),
