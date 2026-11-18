@@ -128,6 +128,7 @@ SPEC-07 DL-03 ("Mark as answered" is disabled; the button contract has no disabl
 | `harness/behaviour.mjs` | The behaviour check: BEH-01 to BEH-09 |
 | `harness/context.mjs` | `npm run context`: one feature's part of the spec, for an agent |
 | `.claude/agents/rules-watch.md` | The rules watch, run on a schedule |
+| `templates/.github/workflows/spec.yml` | A workflow with one job, `spec`, that runs the spec check. Copy it into your project to make `spec` a required check |
 | `.github/CODEOWNERS` | Who approves a change to each part of the spec. The lines are examples, commented out |
 | `harness/look.mjs` | Runs the design system's checks on every state |
 | `harness/handoff.mjs` | Writes `handoff/` from the spec |
@@ -143,6 +144,7 @@ Once: `npm install`, then `npx playwright install chromium`.
 2. Run `npm run spec` until it passes.
 3. Use it in any of the ways above. An AI tool reads `AGENTS.md` first.
 4. Run `npm run check` on every pull request. `.github/workflows/checks.yml` does it for you.
+5. To block a merge when the spec fails, copy `templates/.github/workflows/spec.yml` into your project's `.github/workflows/`, and set the path to the spec check in its last line. Push it once, so the `spec` check appears on a pull request. Only then mark `spec` as a required status check in the main branch ruleset. A required check that no workflow reports never passes, and nothing can merge.
 
 The smallest start: one flow, the screen it lands on, and five evals.
 
