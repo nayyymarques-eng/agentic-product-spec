@@ -43,7 +43,10 @@ One row per rule in `rules.md`:
 | ID | BR- and a number |
 | Rule | One rule, in plain words, that you can pass or fail |
 | Sources | The external rules, decisions, goals or roles it comes from, by ID. A rule with no source is an opinion: it goes to `questions.md` first |
-| Where | The screens that apply it |
+| Level | How far it holds: `product` (every screen of the product), `feature: <flow>` (every screen of that flow), or empty (only the screens in Where) |
+| Where | The screens that apply it. For a product or feature rule, only the screens where it shows something of its own |
+
+A behaviour many screens share, such as what happens offline or how a field shows a wrong value, is written once, as a product or feature rule. A screen does not repeat it: it says only what is its own, such as its words, its buttons, or an exception. The spec check does not ask a screen to cite a rule it inherits, and `npm run context` prints these rules first, under "Rules that hold here".
 
 ## How a decision is written
 
@@ -98,6 +101,8 @@ Each review can find something new, because each change gives it more to read. S
 4. every other finding two runs agree on is fixed, written as an open question for an expert, listed under `## Not covered`, or written in the report as a follow-up for a later change.
 
 A fix changes the feature, and so its spec hash: the review runs again on the fixed version. That run is the last one when none of its agreed findings goes against a rule or a decision: its other findings become follow-ups in its report, and the feature merges. A finding only one run made is a question for a person, not a fix.
+
+The reviews stop when a round's agreed findings are only edge cases that product or feature rules already answer. The feature is then ready to build, and the next review runs only after the spec changes.
 
 ## How much review a change needs
 
