@@ -18,7 +18,7 @@ Everything in this folder is an example for a made-up product: an inbox where a 
 | `goals.md` | What each role comes to the product to get done | G-01 |
 | `sources/` | The external rules: laws, regulator guidance, contracts, platform policies and standards, each with its source text. Written once, here. The synthetic user and the rules watch read them here | PRIV-01 |
 | `decisions.md` | The product decision log: decisions about the whole product, made for no single feature, with why, who decided, when, and what they apply to (`product` for all). Every decision made for a feature lives in that feature's flow file instead | D-01 |
-| `decisions-replaced.md` | Decisions that are no longer true, each with the decision that replaced it. Nothing may cite them | D-01 |
+| `decisions-replaced.md` | Decisions that are no longer true, each with the decision that replaced it and what we learned. Nothing may cite them | D-01 |
 | `rules.md` | The business rules: what the product does, each citing the external rules, decisions, goals or roles it comes from | BR-01 |
 | `questions.md` | What nobody has answered yet, who will, what the product does meanwhile, and the flows and screens it applies to | Q-01 |
 | `glossary.md` | What each thing in the product is today, in one line, and the decision behind it | none |
@@ -58,10 +58,11 @@ Decisions live at two levels. A decision about the whole product, made for no si
 | Applies to | The flows and screens it touches, by file name, or `product` for the whole product |
 | Date | When it was made |
 | Status | Optional. `proposed` until the person in Decided by approves it, then `decided`. A table without the column holds decided decisions only |
+| Considered instead | Optional. What was weighed and dropped, and why. An agent does not propose it again unless it names what is new since the decision |
 
 A proposed decision is written like any other, with Status `proposed` and, in Decided by, the person who must approve it. Until then, every agent treats it as an open question, and the spec check fails, so it cannot merge undecided. The person approves it by setting Status to `decided` in the same pull request.
 
-Two features can decide differently. When a decision is no longer true, its row moves to `decisions-replaced.md`, with two more columns: the decision that replaced it and the date. The spec check then fails on anything that still cites the old one, so each place that followed it is looked at again.
+Two features can decide differently. When a decision is no longer true, its row moves to `decisions-replaced.md`, with three more columns: the decision that replaced it, the date, and what we learned: why it stopped being true. The next person or agent to touch the feature reads it there, so a decision dropped for a reason does not come back. The spec check then fails on anything that still cites the old one, so each place that followed it is looked at again.
 
 A business rule cites the decisions it follows, by ID. When an open question is answered, the answer becomes a decision. An open question names the flows and screens it applies to: it may stay open inside one feature, but one that reaches further is answered before the change merges.
 
