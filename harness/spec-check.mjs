@@ -3,7 +3,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { readdirSync } from 'node:fs';
-import { dialogShown, dsDir, featureHash, list, structureHash, PRODUCT, readSpec, root } from './spec.mjs';
+import { dialogShown, dsDir, featureHash, list, ruleLevel, structureHash, PRODUCT, readSpec, root } from './spec.mjs';
 
 const ds = join(dsDir, 'contracts');
 const spec = readSpec();
@@ -36,6 +36,10 @@ for (const r of spec.rules) {
   const cited = r.Sources.split(',').map(x => x.trim()).filter(Boolean);
   if (!cited.length) fail('SPEC-02', `${r.ID} has no source; write it in questions.md first`, 'spec/rules.md');
   for (const c of cited) if (!known.has(c)) fail('SPEC-02', `${r.ID} cites ${c}, which does not exist`, 'spec/rules.md');
+  // A Level is product, feature: <flow>, or empty.
+  const lv = ruleLevel(r);
+  if (lv.level === 'unknown') fail('SPEC-02', `${r.ID} has the Level "${lv.text}"; write product, feature: <flow>, or leave it empty`, 'spec/rules.md');
+  if (lv.level === 'feature' && !spec.flows.some(f => f.name === lv.flow)) fail('SPEC-02', `${r.ID} is a feature rule of "${lv.flow}", which is not a flow`, 'spec/rules.md');
 }
 for (const s of spec.screens) {
   for (const id of [...s.roles, ...s.goals]) if (!known.has(id)) fail('SPEC-02', `${id} does not exist`, s.file);
@@ -56,7 +60,8 @@ for (const r of spec.roles) {
   else if (!existsSync(join(root, 'spec', sheet))) fail('SPEC-10', `${r.ID} links ${sheet}, which does not exist`, 'spec/roles.md');
 }
 
-// SPEC-03: every rule is applied by a state or a dialog of each screen it names.
+// SPEC-03: every rule is applied by a state or a dialog of each screen it names. A product or feature rule holds on
+// screens it does not name too, and a screen that does not repeat it fails nothing.
 for (const r of spec.rules) {
   for (const where of r.Where.split(',').map(x => x.trim()).filter(Boolean)) {
     const s = spec.screens.find(x => x.name === where);

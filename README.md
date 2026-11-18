@@ -25,6 +25,8 @@ One spec per product, in the `spec/` folder.
 | Product | What the whole product shares: the roles (kinds of user) and their persona sheets, the goals of each role, the external rules, the decisions about the whole product, the business rules with their sources, the open questions and a glossary | `spec/roles.md`, `personas/`, `goals.md`, `sources/`, `decisions.md`, `rules.md`, `questions.md`, `glossary.md` |
 | Feature | What each feature does: one file per task, with each step, who acts, the screen state it lands on and the decisions made for that feature; one file per screen, with every state and a table of evals | `spec/flows/`, `spec/screens/` |
 
+A business rule can hold beyond the screens that cite it. A product rule holds on every screen, and a feature rule on every screen of one flow, so a behaviour many screens share is written once, and a screen says only what is its own. The Level column of `rules.md` says which.
+
 Every item has an ID: roles R-01, goals G-01, external rules PRIV-01, decisions D-01, business rules BR-01, questions Q-01, flow steps F-01, screen states ST-01, evals E-01. Code, checks and the handoff cite these IDs, so a search for an ID finds everything that uses it.
 
 ## Ways to use it
@@ -37,10 +39,10 @@ The spec is written once and used in several ways. Each one reads the same files
 | Change a feature | A law changes, a product decision is made, or someone finds a problem. Change the spec first: the rule, the step, the state and an eval that shows the change. Then the screen. If the spec merges first, mark the new state "Built: not yet"; the checks skip it until the screen is built. A decision that changes moves to `decisions-replaced.md`, with what we learned, and the spec check names everything that still cites it. |
 | Start from what you have | For a product that already exists: write the flow of one task as the product does it today, from the code and the screens. A person confirms which of those behaviours were chosen on purpose; those become decisions, and the ones nobody can explain become questions. Then the next task. |
 | QA | Run the evals against the built screen (`npm run behaviour`). Each failure names the eval and what differs from the spec. |
-| Review before merging | Before a change merges into the spec, a synthetic user reads the feature as each role, against the external rules and the persona sheets, three times; the findings two runs agree on are kept (`reviews/README.md`). |
+| Review before merging | Before a change merges into the spec, a synthetic user reads the feature as each role, against the external rules and the persona sheets, three times; the findings two runs agree on are kept (`reviews/README.md`). The reviews stop when the agreed findings are only edge cases that product or feature rules already answer. |
 | Keep the external rules current | Optional, for products whose external rules change often, such as regulated ones. The rules watch (`.claude/agents/rules-watch.md`) reads the sources on a schedule and lists everything that depends on a rule that changed. It belongs to the spec: a synthetic user reads the rules from here. |
 | Hand it to the backend | `npm run handoff` writes the rules, the flow and one acceptance test per eval, for whoever builds the backend. |
-| Give an agent one feature | `npm run context answer-a-request` prints that feature's flow and screens, and only the rules, decisions, questions and persona sheets they touch. The agent reads that, not the whole spec. |
+| Give an agent one feature | `npm run context answer-a-request` prints the rules that hold on every screen of that feature first, then its flow and screens, and only the other rules, decisions, questions and persona sheets they touch. The agent reads that, not the whole spec. |
 | Answer a question | Search for an ID, such as BR-02, to find every flow, state, eval and line of code that uses it. |
 
 ## The example in this kit
@@ -49,6 +51,7 @@ The files in `spec/` describe a made-up product, so the kit has something real t
 
 The product is an inbox where a shop's privacy lead answers people's requests for a copy of their personal data, under the GDPR. The legal time to answer is one month, and it can be extended once by two months. The synthetic user in [grounded-synthetic-user](https://github.com/nayyymarques-eng/grounded-synthetic-user) reviews this same spec.
 
+- **Eight business rules**, `spec/rules.md`: one product rule (BR-06, answering is free, on every screen), one feature rule (BR-01, how the due date is counted, on every screen of answer-a-request), and six that hold only on the screens they name.
 - **One flow**, `spec/flows/answer-a-request.md`: it starts when a person emails the shop, and ends when the privacy lead has recorded the answer. 8 steps, 5 evals for what no screen shows, the decisions made for this feature, and what it leaves out.
 - **One screen**, `spec/screens/request.md`: one request, as the privacy lead or the support agent sees it. 10 states, 3 dialogs that open over them, and 51 evals, with one eval for every pair of states that can be true at once.
 
@@ -92,6 +95,7 @@ Each break below was made on purpose, one at a time. Each line is what the check
 | An open question reaches a second flow | `SPEC-12 (Q-01 reaches beyond one feature (answer-a-request, close-a-request, request); answer it, as a decision, before this merges)` |
 | A rule has no eval | `SPEC-13 (BR-09 has no eval; add an eval on a state that applies it, or a flow eval)` |
 | A rule cites a decision that does not exist | `SPEC-02 (BR-07 cites D-11, which does not exist)` |
+| A feature rule names a flow that does not exist | `SPEC-02 (BR-01 is a feature rule of "close-a-request", which is not a flow)` |
 | No state applies a rule | `SPEC-03 (BR-08 is applied by no state or dialog of request)` |
 | A state uses a badge the design system does not have | `SPEC-05 (ST-06: badge "success" is not a badge variant)` |
 | A state has no eval | `SPEC-06 (ST-04 has no eval)` |

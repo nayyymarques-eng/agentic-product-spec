@@ -15,6 +15,18 @@ export const dsDir = join(root, dsPath);
 /** "product" in Applies to: a decision for the whole product, or a question that reaches every feature. */
 export const PRODUCT = 'product';
 
+/** A business rule's Level, from rules.md: "product" holds on every screen of the product, "feature: <flow>" on
+ * every screen of that flow, and an empty Level holds only on the screens its Where names. A screen does not
+ * repeat an inherited rule: Where names only the screens where the rule shows something of its own. */
+export function ruleLevel(rule) {
+  const text = (rule.Level ?? '').trim();
+  if (!text) return { level: '' };
+  if (text === PRODUCT) return { level: PRODUCT };
+  const [kind, ...rest] = text.split(':');
+  if (kind.trim() === 'feature' && rest.length) return { level: 'feature', flow: rest.join(':').trim() };
+  return { level: 'unknown', text };
+}
+
 /** Every markdown table in a text, as arrays of rows keyed by the header. */
 export function tables(text) {
   const out = [];

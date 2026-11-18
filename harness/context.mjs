@@ -4,7 +4,7 @@
 // Usage: npm run context <flow or screen>, such as: npm run context answer-a-request
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { featureHash, list, structureHash, readSpec, root } from './spec.mjs';
+import { featureHash, list, ruleLevel, structureHash, PRODUCT, readSpec, root } from './spec.mjs';
 
 const spec = readSpec();
 const want = process.argv[2];
@@ -20,8 +20,16 @@ const screenNames = new Set(spec.screens.some(s => s.name === want) ? [want] : f
 const screens = spec.screens.filter(s => screenNames.has(s.name));
 const here = new Set([...flows.map(f => f.name), ...screens.map(s => s.name)]);
 
+// The rules that hold here without being cited: every product rule, and the feature rules of these flows.
+const inherited = spec.rules.filter(r => {
+  const lv = ruleLevel(r);
+  return lv.level === PRODUCT || (lv.level === 'feature' && flows.some(f => f.name === lv.flow));
+});
+const inheritedIds = new Set(inherited.map(r => r.ID));
+
 // What the feature cites, then what those cite in turn, until nothing new turns up.
 const ids = new Set([
+  ...inheritedIds,
   ...flows.flatMap(f => [...f.roles, ...f.goals]),
   ...screens.flatMap(s => [...s.roles, ...s.goals, ...[...s.states, ...s.dialogs].flatMap(st => [...st.rules, ...st.goals])]),
   ...[...spec.decisions, ...spec.questions].filter(d => list(d['Applies to']).some(w => here.has(w) || w === 'product')).map(d => d.ID),
@@ -35,12 +43,12 @@ for (let grew = true; grew;) {
 }
 
 const read = file => readFileSync(join(root, file), 'utf8').trim();
-function rows(title, file, list) {
+function rows(title, file, list, note = '') {
   const picked = list.filter(r => ids.has(r.ID));
   if (!picked.length) return '';
   const head = Object.keys(picked[0]).filter(k => k !== 'file');
   const line = c => `| ${c.join(' | ')} |`;
-  return `## ${title} (from ${file})\n\n${line(head)}\n${line(head.map(() => '---'))}\n${picked.map(r => line(head.map(h => r[h]))).join('\n')}`;
+  return `## ${title} (from ${file})\n\n${note ? `${note}\n\n` : ''}${line(head)}\n${line(head.map(() => '---'))}\n${picked.map(r => line(head.map(h => r[h] ?? ''))).join('\n')}`;
 }
 function replacedRows() {
   const picked = spec.replaced.filter(r => list(r['Applies to']).some(w => here.has(w)) || ids.has(r['Replaced by']));
@@ -54,9 +62,10 @@ const personas = spec.roles.filter(r => ids.has(r.ID)).map(r => r['Persona sheet
 const out = [
   `# Context for ${want}`,
   `Made by \`npm run context ${want}\` from the spec, which stays the only source. Read this before you build, review or test this feature. If what you need is not here, it is not decided: write the question in \`spec/questions.md\`.`,
+  rows('Rules that hold here', 'spec/rules.md', inherited, 'Product rules hold on every screen, and feature rules on every screen of their flow. A screen does not repeat them, and one that does not cite them still follows them.'),
   ...flows.map(f => read(f.file)),
   ...screens.map(s => read(s.file)),
-  rows('Business rules', 'spec/rules.md', spec.rules),
+  rows('Business rules', 'spec/rules.md', spec.rules.filter(r => !inheritedIds.has(r.ID))),
   rows('Product decisions', 'spec/decisions.md', spec.decisions.filter(d => d.file === 'spec/decisions.md')),
   // Replaced decisions this feature followed, with what was learned, so an option already dropped does not come back.
   replacedRows(),
