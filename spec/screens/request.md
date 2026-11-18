@@ -28,12 +28,44 @@ The words in braces come from the eval row. A line under "Shows when it happened
 | {reason} | The reason the lead wrote in Extend. The evals use one sample reason |
 | {doubt} | The doubt the lead wrote in Ask for proof of identity. The evals use one sample doubt |
 
+## Conditions
+
+What decides the state. Each condition takes one value at a time, and each value says how an eval's facts set it. The decision table under `## States` uses them.
+
+| Condition | Value | From the eval's facts |
+|---|---|---|
+| Viewer | lead | Viewer is R-01 |
+| Viewer | support | Viewer is R-02 |
+| Answered | no | Answered on is - |
+| Answered | on time | Answered on is on or before Due |
+| Answered | late | Answered on is after Due |
+| Due date | more than 7 days | Today is more than 7 days before Due |
+| Due date | 7 days or less | Today is 0 to 7 days before Due |
+| Due date | passed | Today is after Due |
+| Proof | not asked | Proof asked on is - |
+| Proof | waiting | Proof asked on is set, Proof received on is - |
+| Proof | arrived | Proof received on is set |
+| Extended | no | Extended on is - |
+| Extended | yes | Extended on is set |
+
 ## States
 
-When two states could apply, the first one in this list wins. Every pair of states that can be true at once has an eval that says which one wins and what it keeps. A dialog is not a state: it opens over one, under `## Dialogs`.
+The decision table says when each state applies. The rows are tried in order, and the first one that matches wins. A "-" matches any value. When two rows match the same situation, an eval says which one wins and what it keeps. A dialog is not a state: it opens over one, under `## Dialogs`.
+
+| State | Viewer | Answered | Due date | Proof | Extended |
+|---|---|---|---|---|---|
+| ST-07 Support agent's view | support | - | - | - | - |
+| ST-10 Answered late | lead | late | - | - | - |
+| ST-06 Answered | lead | on time | - | - | - |
+| ST-09 Overdue, waiting for proof of identity | lead | no | passed | waiting | - |
+| ST-03 Overdue | lead | no | passed | - | - |
+| ST-08 Waiting for proof of identity, due soon | lead | no | 7 days or less | waiting | - |
+| ST-05 Waiting for proof of identity | lead | no | more than 7 days | waiting | - |
+| ST-02 Due soon | lead | no | 7 days or less | - | - |
+| ST-04 Extended | lead | no | more than 7 days | - | yes |
+| ST-01 Open | lead | no | more than 7 days | not asked, arrived | no |
 
 ### ST-07 Support agent's view
-- When: a support agent opens a request, whatever its state
 - Status: badge none "With the privacy lead"
 - Banner: none
 - Actions: none
@@ -42,7 +74,6 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Goals: G-04
 
 ### ST-10 Answered late
-- When: the privacy lead marked the request as answered, with a date after the due date
 - Status: badge warning "Answered {late} late"
 - Banner: none
 - Actions: none
@@ -51,7 +82,6 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Goals: G-01, G-03
 
 ### ST-06 Answered
-- When: the privacy lead marked the request as answered, with a date on or before the due date
 - Status: badge positive "Answered on {answered}"
 - Banner: none
 - Actions: none
@@ -60,7 +90,6 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Goals: G-01, G-03
 
 ### ST-09 Overdue, waiting for proof of identity
-- When: not answered, today is after the due date, and the proof of identity asked for has not arrived
 - Status: badge critical "Overdue by {overdue}"
 - Banner: critical "This request is past its due date. You asked for proof of identity on {asked} and it has not arrived."
 - Actions: Proof received (primary), Mark as answered (tertiary)
@@ -68,7 +97,6 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Goals: G-01, G-02
 
 ### ST-03 Overdue
-- When: not answered, and today is after the due date
 - Status: badge critical "Overdue by {overdue}"
 - Banner: critical "This request is past its due date. It stays at the top of your list until you mark it as answered."
 - Actions: Mark as answered (primary)
@@ -76,7 +104,6 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Goals: G-01, G-02
 
 ### ST-08 Waiting for proof of identity, due soon
-- When: the proof of identity asked for has not arrived, and the due date is 7 days away or less
 - Status: badge warning "Due {in}"
 - Banner: info "You asked for proof of identity on {asked}. Waiting does not move the due date."
 - Actions: Proof received (primary), Extend (secondary) unless already extended, Mark as answered (tertiary)
@@ -84,7 +111,6 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Goals: G-01, G-02
 
 ### ST-05 Waiting for proof of identity
-- When: the proof of identity asked for has not arrived
 - Status: badge none "Waiting for proof of identity"
 - Banner: info "You asked for proof of identity on {asked}. Waiting does not move the due date: {due}."
 - Actions: Proof received (primary), Extend (secondary) unless already extended, Mark as answered (tertiary)
@@ -92,7 +118,6 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Goals: G-01
 
 ### ST-02 Due soon
-- When: not answered, and the due date is 7 days away or less
 - Status: badge warning "Due {in}"
 - Banner: none
 - Actions: Mark as answered (primary), Extend (secondary) unless already extended, Ask for proof of identity (tertiary) unless already asked
@@ -100,7 +125,6 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Goals: G-01, G-02
 
 ### ST-04 Extended
-- When: the privacy lead extended the due date, and it is more than 7 days away
 - Status: badge info "Extended to {due}"
 - Banner: none
 - Actions: Mark as answered (primary), Ask for proof of identity (tertiary) unless already asked
@@ -108,7 +132,6 @@ When two states could apply, the first one in this list wins. Every pair of stat
 - Goals: G-01, G-03
 
 ### ST-01 Open
-- When: none of the above
 - Status: badge info "Due on {due}"
 - Banner: none
 - Actions: Mark as answered (primary), Extend (secondary), Ask for proof of identity (tertiary) unless already asked
@@ -123,7 +146,7 @@ A dialog opens over a state, from one of its buttons, and leaves that state as i
 - Opens from: Extend
 - Over: ST-01, ST-02, ST-05, ST-08
 - Title: "Extend the due date by two months"
-- Asks: "Reason, for the letter to the person"
+- Asks: "Why it needs more time: the request is complex, or there are many requests. For the letter to the person"
 - Actions: Extend (primary, disabled until written), Cancel (tertiary)
 - Closes when: the due date passes, or the request is extended or answered in another tab. Nothing is extended.
 - Rules: BR-02

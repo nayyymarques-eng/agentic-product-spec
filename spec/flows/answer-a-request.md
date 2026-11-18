@@ -16,7 +16,7 @@ From the email a person sends to the shop to the answer. One flow per job a role
 | F-03 | R-01 | Is it clear who the person is? | - | - | - | yes: F-05; no: F-04 |
 | F-04 | R-01 | Writes the doubt, asks for proof of identity, and waits | request | ST-05, ST-08 | DL-02 | F-05 when the proof arrives, F-06 to extend while waiting, or F-08 when the due date passes |
 | F-05 | R-01 | Can the answer go out by the due date? | - | - | - | yes: F-07; no, and not extended yet: F-06; no, and already extended: F-08 |
-| F-06 | R-01 | Extends the due date by two months, with a reason for the person | request | ST-04, ST-05, ST-08 | DL-01 | F-07, or F-08 when the new due date passes |
+| F-06 | R-01 | Extends the due date by two months, with a reason for the person | request | ST-04, ST-02, ST-05, ST-08 | DL-01 | F-07, or F-08 when the new due date passes |
 | F-07 | R-01 | Sends the answer, and records the date it was sent | request | ST-06, ST-10 | DL-03 | end |
 | F-08 | R-01 | The due date passes with no answer | request | ST-03, ST-09 | - | F-07 |
 
@@ -41,7 +41,7 @@ The feature decision log: every decision made for this feature. Each applies to 
 | D-04 | A request is extended once, always by the full two months. | One letter, one new date. The law allows up to two more months (PRIV-02). | Product designer, with the privacy lead | 2026-11-13 |
 | D-05 | While the lead waits for proof of identity, the due date does not move. | Nobody has answered Q-01 yet. Keeping the earlier date is the safe reading. | Product designer | 2026-11-13 |
 | D-06 | A request is "due soon" from 7 days before its due date. | The lead needs a week to gather the data and write the answer (G-02). | Product designer | 2026-11-13 |
-| D-07 | While the lead waits for proof of identity, the request can still be extended, and it shows as due soon in its last 7 days. | Proof can arrive late. Without this, the lead loses the extension in the last week. | Product designer | 2026-11-17 |
+| D-07 | While the lead waits for proof of identity, the request can still be extended, on a ground PRIV-02 gives: the request is complex, or there are many requests. Waiting for proof is not a ground on its own. The request shows as due soon in its last 7 days. | Proof can arrive late, and a complex request or a busy month still needs the extension. Without this, the lead loses it in the last week. | Product designer | 2026-11-17 |
 | D-08 | An answer sent after the due date shows as answered late, with the number of days. | A complaint file must show it, and an answer on time must not look the same (G-03). | Product designer | 2026-11-17 |
 | D-10 | Proof of identity is asked for once per request. | One doubt, one record: a second ask would hide the first (G-03). Whether one proof can be not enough is Q-07. | Product designer | 2026-11-17 |
 | D-09 | Each dialog that needs a written reason, doubt or date keeps its main button disabled until it is written. | The person must be told the reasons for an extension (PRIV-03), a doubt about identity must be reasonable (PRIV-07), and an answer needs its date to show later what was done (G-03). | Product designer | 2026-11-17 |
