@@ -32,12 +32,17 @@ function mermaid(f) {
     out.push(x.screen ? `  ${node(x.id)}["${text}"]` : `  ${node(x.id)}{"${text}"}`);
   }
   for (const x of f.steps) {
-    for (const part of x.next.split(/;|, or /).map(p => p.trim())) {
+    // A step's Next lists its ways on, split by ";" or by a comma before the next step ("F-05 when ..., F-06 to ..., or F-08 when ...").
+    const drawn = [];
+    for (const part of x.next.split(/;|,\s*(?:or\s+)?(?=F-\d{2})/).map(p => p.trim())) {
       const to = part.match(/F-\d{2}/)?.[0];
       if (!to) continue;
+      drawn.push(to);
       const why = part.replace(to, '').replace(':', '').trim();
       out.push(why ? `  ${node(x.id)} -- "${label(why)}" --> ${node(to)}` : `  ${node(x.id)} --> ${node(to)}`);
     }
+    const lost = x.to.filter(to => !drawn.includes(to));
+    if (lost.length) { console.error(`handoff: ${x.id}'s Next names ${lost.join(', ')}, and the flowchart has no arrow to it`); process.exit(1); }
     if (x.ends) out.push(`  ${node(x.id)} --> E(["${label(f.ends)}"])`);
   }
   out.push('```');
@@ -138,9 +143,12 @@ for (const s of spec.screens) {
     '',
     '## External rules',
     '',
-    ...[...cited].filter(id => byId.get(id)?.file).sort().map(id => `- **${id}** (${byId.get(id).Source}, ${byId.get(id).Mark}): ${byId.get(id).Rule}`),
+    ...spec.sources.filter(r => cited.has(r.ID)).sort((a, b) => a.ID.localeCompare(b.ID)).map(r => `- **${r.ID}** (${r.Source}, ${r.Mark}): ${r.Rule}`),
     '',
   ];
+  // A field the script reads that the spec does not have comes out as "undefined". Fail, rather than hand it over.
+  const missing = lines.filter(l => /\bundefined\b/.test(l));
+  if (missing.length) { console.error(`handoff/${s.name}.md: a field is missing in:\n${missing.join('\n')}`); process.exit(1); }
   writeFileSync(join(root, 'handoff', `${s.name}.md`), lines.join('\n'));
   console.log(`handoff/${s.name}.md`);
 }

@@ -24,7 +24,7 @@ flowchart TD
   F03{"F-03 Is it clear who the person is?"}
   F04["F-04 Writes the doubt, asks for proof of identity, and waits<br/>DL-02, ST-05, ST-08"]
   F05{"F-05 Can the answer go out by the due date?"}
-  F06["F-06 Extends the due date by two months, with a reason for the person<br/>DL-01, ST-04, ST-05, ST-08"]
+  F06["F-06 Extends the due date by two months, with a reason for the person<br/>DL-01, ST-04, ST-02, ST-05, ST-08"]
   F07["F-07 Sends the answer, and records the date it was sent<br/>DL-03, ST-06, ST-10"]
   F08["F-08 The due date passes with no answer<br/>ST-03, ST-09"]
   F01 --> F02
@@ -32,7 +32,8 @@ flowchart TD
   F02 -- "when the due date passes" --> F08
   F03 -- "yes" --> F05
   F03 -- "no" --> F04
-  F04 -- "when the proof arrives, F-06 to extend while waiting" --> F05
+  F04 -- "when the proof arrives" --> F05
+  F04 -- "to extend while waiting" --> F06
   F04 -- "when the due date passes" --> F08
   F05 -- "yes" --> F07
   F05 -- "no, and not extended yet" --> F06
@@ -195,15 +196,6 @@ Built as "meanwhile" says. When the answer comes, the spec changes in one place,
 
 ## External rules
 
-- **D-01** (undefined, undefined): undefined
-- **D-02** (undefined, undefined): undefined
-- **D-04** (undefined, undefined): undefined
-- **D-05** (undefined, undefined): undefined
-- **D-06** (undefined, undefined): undefined
-- **D-07** (undefined, undefined): undefined
-- **D-08** (undefined, undefined): undefined
-- **D-09** (undefined, undefined): undefined
-- **D-10** (undefined, undefined): undefined
 - **PRIV-01** (GDPR Art. 12(3), to confirm): Answer a request about personal data (access, correction, erasure, restriction, portability, objection) without undue delay, and within one month of receiving it at the latest.
 - **PRIV-02** (GDPR Art. 12(3), to confirm): The month can be extended by two more months when needed, given how complex the requests are and how many there are.
 - **PRIV-03** (GDPR Art. 12(3), to confirm): The person must be told of an extension within one month of the request, with the reasons.
