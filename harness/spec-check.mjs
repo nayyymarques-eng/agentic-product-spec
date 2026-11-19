@@ -15,13 +15,13 @@ const kinds = { 'G-': spec.goals, 'R-': spec.roles, 'BR-': spec.rules, 'D-': [..
 const known = new Set(spec.sources.map(r => r.ID));
 for (const [prefix, rows] of Object.entries(kinds)) {
   for (const r of rows) {
-    if (!new RegExp(`^${prefix}\\d{2}$`).test(r.ID)) fail('SPEC-01', `"${r.ID}" is not ${prefix}NN`, 'spec/');
+    if (!new RegExp(`^${prefix}\\d{2,3}$`).test(r.ID)) fail('SPEC-01', `"${r.ID}" is not ${prefix}NN`, 'spec/');
     if (known.has(r.ID)) fail('SPEC-01', `${r.ID} is used twice`, 'spec/');
     known.add(r.ID);
   }
 }
 for (const s of spec.screens) for (const x of [...s.states, ...s.dialogs]) {
-  if (!/^(ST|DL)-\d{2}$/.test(x.id)) fail('SPEC-01', `"${x.id}" is not ST-NN or DL-NN`, s.file);
+  if (!/^(ST|DL)-\d{2,3}$/.test(x.id)) fail('SPEC-01', `"${x.id}" is not ST-NN or DL-NN`, s.file);
   if (known.has(`${s.name}:${x.id}`)) fail('SPEC-01', `${x.id} is used twice`, s.file);
   known.add(`${s.name}:${x.id}`);
 }
@@ -130,7 +130,7 @@ for (const f of spec.flows) {
   const reached = new Set(f.steps.flatMap(x => x.to));
   if (!f.steps.some(x => x.ends)) fail('SPEC-08', `${f.title} never ends`, f.file);
   f.steps.forEach((x, i) => {
-    if (!/^F-\d{2}$/.test(x.id)) fail('SPEC-08', `"${x.id}" is not F-NN`, f.file);
+    if (!/^F-\d{2,3}$/.test(x.id)) fail('SPEC-08', `"${x.id}" is not F-NN`, f.file);
     if (!known.has(x.who)) fail('SPEC-08', `${x.id}: ${x.who} is not a role`, f.file);
     if (i > 0 && !reached.has(x.id)) fail('SPEC-08', `${x.id} is reached by no step`, f.file);
     if (!x.to.length && !x.ends) fail('SPEC-08', `${x.id} goes nowhere`, f.file);
@@ -169,7 +169,7 @@ const citing = [
   ...spec.questions.map(r => [r, 'spec/questions.md']), ...spec.glossary.map(r => [r, 'spec/glossary.md']),
   ...[...spec.flows, ...spec.screens].map(x => [{ ID: x.name, text: readFileSync(join(root, x.file), 'utf8') }, x.file]),
 ];
-for (const [row, file] of citing) for (const id of Object.values(row).join(' ').match(/\bD-\d{2}\b/g) ?? []) {
+for (const [row, file] of citing) for (const id of Object.values(row).join(' ').match(/\bD-\d{2,3}\b/g) ?? []) {
   if (gone.has(id)) fail('SPEC-11', `${row.ID} cites ${id}, which was replaced by ${gone.get(id)['Replaced by']}`, file);
 }
 

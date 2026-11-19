@@ -34,8 +34,8 @@ function mermaid(f) {
   for (const x of f.steps) {
     // A step's Next lists its ways on, split by ";" or by a comma before the next step ("F-05 when ..., F-06 to ..., or F-08 when ...").
     const drawn = [];
-    for (const part of x.next.split(/;|,\s*(?:or\s+)?(?=F-\d{2})/).map(p => p.trim())) {
-      const to = part.match(/F-\d{2}/)?.[0];
+    for (const part of x.next.split(/;|,\s*(?:or\s+)?(?=F-\d{2,3})/).map(p => p.trim())) {
+      const to = part.match(/F-\d{2,3}/)?.[0];
       if (!to) continue;
       drawn.push(to);
       const why = part.replace(to, '').replace(':', '').trim();

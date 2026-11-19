@@ -50,7 +50,7 @@ export async function checkBehaviour() {
 
     // BEH-08: the code knows only the states the spec has.
     const code = readFileSync(join(root, 'src', `${screen.name}.ts`), 'utf8');
-    const inCode = new Set(code.match(/\b(?:ST|DL)-\d{2}\b/g) ?? []);
+    const inCode = new Set(code.match(/\b(?:ST|DL)-\d{2,3}\b/g) ?? []);
     const inSpec = new Set([...screen.states, ...screen.dialogs].map(s => s.id));
     for (const id of inCode) if (!inSpec.has(id)) fail('BEH-08', 'code', `the code has ${id}, which the spec does not`);
     // BEH-09: every rule the screen's states apply is named, by ID, where the code applies it. A rule nobody can
@@ -60,7 +60,7 @@ export async function checkBehaviour() {
     for (const id of new Set([...screen.states, ...screen.dialogs].flatMap(s => s.rules))) if (!new RegExp(`\\b${id}\\b`).test(both)) fail('BEH-09', 'code', `${id} is applied by a state, and named nowhere in src/${screen.name}.ts or screens/${screen.name}.tsx`);
     // ...and the code names no rule or decision the spec no longer has: a deleted rule, or a replaced decision.
     const live = new Set([...spec.rules.map(r => r.ID), ...spec.decisions.map(d => d.ID)]);
-    for (const id of new Set(both.match(/\b(?:BR|D)-\d{2}\b/g) ?? [])) if (!live.has(id)) fail('BEH-09', 'code', `the code names ${id}, which is not a live rule or decision in the spec`);
+    for (const id of new Set(both.match(/\b(?:BR|D)-\d{2,3}\b/g) ?? [])) if (!live.has(id)) fail('BEH-09', 'code', `the code names ${id}, which is not a live rule or decision in the spec`);
 
     for (const { row, file, logic, words } of pages) {
       checked++;
