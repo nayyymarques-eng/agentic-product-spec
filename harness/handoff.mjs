@@ -57,7 +57,7 @@ for (const s of spec.screens) {
     const lv = ruleLevel(r);
     return lv.level === PRODUCT || (lv.level === 'feature' && flowsHere.some(f => f.name === lv.flow));
   }).map(r => r.ID);
-  const rules = [...new Set([...inherited, ...s.states.flatMap(st => st.rules), ...s.dialogs.flatMap(d => d.rules), ...flowsHere.flatMap(f => f.evals.flatMap(e => e.rules))])].sort().map(id => byId.get(id));
+  const rules = [...new Set([...inherited, ...s.states.flatMap(st => st.rules), ...s.dialogs.flatMap(d => d.rules), ...flowsHere.flatMap(f => f.evals.flatMap(e => e.rules))])].sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).map(id => byId.get(id));
   const cited = new Set(rules.flatMap(r => r.Sources.split(',').map(x => x.trim())));
   const lines = [
     `# Handoff: ${s.title}`,
