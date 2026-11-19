@@ -102,7 +102,7 @@ Each review can find something new, because each change gives it more to read. S
 
 A fix changes the feature, and so its spec hash: the review runs again on the fixed version. That run is the last one when none of its agreed findings goes against a rule or a decision: its other findings become follow-ups in its report, and the feature merges. A finding only one run made is a question for a person, not a fix.
 
-The reviews stop when a round's agreed findings are only edge cases that product or feature rules already answer. The feature is then ready to build, and the next review runs only after the spec changes.
+A finding becomes an open question only if it passes the three tests in `reviews/README.md`, "When a finding becomes an open question"; every other one goes under "Dropped" in the report. A round where no finding passes them means the feature is ready to build, and the next review runs only after the spec changes.
 
 ## How much review a change needs
 
