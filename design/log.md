@@ -1,6 +1,6 @@
 # Design log
 
-Optional. Whoever changes a screen in the design file writes one row here as they make the change: what it was, what it is now, and why. It takes a minute, and it keeps the why, which nobody can read back from a drawing later.
+Optional. Whoever changes a screen in the design file writes one row here as they make the change: what it was, what it is now, and why. So does whoever decides a change in a conversation, a meeting or a chat while the product is still being shaped, even before anyone draws it: Frame is then the screen it touches, or `product`. It takes a minute, and it keeps the why, which nobody can read back from a drawing later.
 
 Frame is the frame's title. Spec is the decision that brought the change into the spec, or `not yet`. The owner of the round fills in Spec when they write the decision, the state and its eval (`.claude/agents/design-sync.md`). `npm run design` lists every row still `not yet`, and fails on a row with no from, to or why, or on a decision the spec does not have.
 
