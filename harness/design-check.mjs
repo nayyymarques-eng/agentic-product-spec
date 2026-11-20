@@ -12,16 +12,20 @@
 // What it does not check: that the drawing matches the state's text. A frame can name ST-03 and draw something else.
 // A person compares them, or whoever builds the screen does.
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { resolve, sep } from 'node:path';
 import { readSpec, root } from './spec.mjs';
 
-const file = process.argv[2] ?? 'design/frames.json';
-const path = join(root, file);
-if (!existsSync(path)) {
-  console.log(`No frame list at ${file}. Export your design file's frame titles there first (see README, "Keep the design in step").`);
+// The path comes from the command line: accept only a .json file inside this repository.
+const path = resolve(root, process.argv[2] ?? 'design/frames.json');
+if (!path.startsWith(root + sep) || !path.endsWith('.json') || !existsSync(path)) {
+  console.log('No frame list found. Export your design file\'s frame titles to a .json file inside this repository, such as design/frames.json (see README, "Keep the design in step").');
   process.exit(1);
 }
 const frames = JSON.parse(readFileSync(path, 'utf8'));
+if (!Array.isArray(frames)) {
+  console.log('The frame list must be a JSON list: [{ "title": "…" }, …].');
+  process.exit(1);
+}
 const spec = readSpec();
 const screens = new Map(spec.screens.map(s => [s.name, s]));
 const fails = [];
