@@ -68,9 +68,11 @@ for (const s of spec.screens) for (const x of [...s.states, ...s.dialogs]) {
 // The design log, if the team keeps one. One fixed place too.
 const logPath = join(root, 'design', 'log.md');
 const waiting = [];
+const replaced = [];
 let logged = 0;
 if (existsSync(logPath)) {
   const decisions = new Set(spec.decisions.map(d => d.ID));
+  const replacedBy = new Map(spec.replaced.map(d => [d.ID, d['Replaced by']]));
   for (const row of tables(readFileSync(logPath, 'utf8')).flat()) {
     logged++;
     const where = `design log, ${row.Date || 'no date'}, "${row.Frame || 'no frame'}"`;
@@ -80,7 +82,11 @@ if (existsSync(logPath)) {
     // DESIGN-06: the change is in the spec, as a decision the spec has, or it waits for the owner of the round.
     const cited = (row.Spec ?? '').match(/\bD-\d{2,}\b/g) ?? [];
     if (!cited.length) waiting.push(where);
-    for (const id of cited) if (!decisions.has(id)) fails.push(`DESIGN-06 (${where}: the spec has no ${id})`);
+    for (const id of cited) {
+      // A decision that was replaced later keeps its log row: the row is history, and says what replaced it.
+      if (replacedBy.has(id)) replaced.push(`${where}: ${id}, replaced by ${replacedBy.get(id) || 'no one named'}`);
+      else if (!decisions.has(id)) fails.push(`DESIGN-06 (${where}: the spec has no ${id})`);
+    }
   }
 }
 
@@ -88,6 +94,7 @@ const other = frames.filter(f => OTHER.test(f.title ?? '')).length;
 console.log(`Design: ${frames.length} ${frames.length === 1 ? 'frame' : 'frames'}, ${other} explore or reference.`);
 if (notes.length) console.log(`DESIGN-04, a note: no frame draws ${notes.join(', ')}`);
 if (logged) console.log(`Design log: ${logged} ${logged === 1 ? 'change' : 'changes'}, ${waiting.length} not in the spec yet.`);
+if (replaced.length) console.log(`Logged changes whose decision was replaced since (kept as history):\n  ${replaced.join('\n  ')}`);
 if (waiting.length) console.log(`Waiting for the spec (write the decision, the state and its eval today):\n  ${waiting.join('\n  ')}`);
 if (fails.length) {
   console.log(fails.join('\n'));
