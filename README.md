@@ -171,7 +171,7 @@ What the script does not check: that a drawing matches its state. The log says w
 
 It came from a real case. In a product that uses this kit, the design file got about six hours ahead of the spec during one evening of design notes: about ten decisions lived only in the design. Nobody owned the moment a change goes back to the spec, so the rule became "a round of design notes ends with a spec pull request the same day". Even then, the person coding found two differences the titles could not show: a carousel, which is behaviour and belongs in the spec, and a typeface, which is the design system's.
 
-We then tried the drawing review on 12 of those boards, against the spec from before the fix, three times. Every pass found the four changes we knew about: the carousel and three screens the spec did not have. Every pass also found a difference nobody had seen, a missing button, and none reported a difference that was not there. No pass saw the typeface, which the spec never stated, and one real difference showed up in only one pass. That is why the log comes first, and the review is the net.
+The drawing review was then tried on 12 of those boards, against the spec from before the fix, three times. Every pass found the four known changes: the carousel and three screens the spec did not have. Every pass also found a difference nobody had seen, a missing button, and none reported a difference that was not there. No pass saw the typeface, which the spec never stated, and one real difference showed up in only one pass. That is why the log comes first, and the review is the net.
 
 ## What each team can change
 

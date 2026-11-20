@@ -24,7 +24,13 @@ if (!existsSync(path)) {
   console.log('No frame list at design/frames.json. Export your design file\'s frame titles there first (see README, "Keep the design in step").');
   process.exit(1);
 }
-const frames = JSON.parse(readFileSync(path, 'utf8'));
+let frames;
+try {
+  frames = JSON.parse(readFileSync(path, 'utf8'));
+} catch {
+  console.log('design/frames.json is not valid JSON. It must be a list: [{ "title": "…" }, …].');
+  process.exit(1);
+}
 if (!Array.isArray(frames)) {
   console.log('The frame list must be a JSON list: [{ "title": "…" }, …].');
   process.exit(1);
@@ -33,15 +39,15 @@ const spec = readSpec();
 const screens = new Map(spec.screens.map(s => [s.name, s]));
 const fails = [];
 const notes = [];
-const fail = (id, what, frame) => fails.push(`${id} (${what})  ← "${frame.title}"${frame.page ? `, page ${frame.page}` : ''}`);
+const fail = (id, what, frame) => fails.push(`${id} (${what})  ← "${frame?.title ?? ''}"${frame?.page ? `, page ${frame.page}` : ''}`);
 const drawn = new Set();
 const OTHER = /^(Explore|Reference)\s*·/i;
 
 for (const frame of frames) {
-  const title = (frame.title ?? '').trim();
+  const title = String(frame?.title ?? '').trim();
   if (OTHER.test(title)) continue;
   const [name, ids = ''] = title.split('·').map(x => x.trim());
-  const cited = ids.match(/\b(ST|DL)-\d{2}\b/g) ?? [];
+  const cited = ids.match(/\b(ST|DL)-\d{2,3}\b/g) ?? [];
   // DESIGN-01: a frame says what it draws.
   if (!ids || !cited.length) { fail('DESIGN-01', 'names no state; title it "<screen> · ST-nn", "Explore · …" or "Reference · …"', frame); continue; }
   // DESIGN-02: the screen it names is in the spec.
@@ -90,7 +96,7 @@ if (existsSync(logPath)) {
   }
 }
 
-const other = frames.filter(f => OTHER.test(f.title ?? '')).length;
+const other = frames.filter(f => OTHER.test(String(f?.title ?? ''))).length;
 console.log(`Design: ${frames.length} ${frames.length === 1 ? 'frame' : 'frames'}, ${other} explore or reference.`);
 if (notes.length) console.log(`DESIGN-04, a note: no frame draws ${notes.join(', ')}`);
 if (logged) console.log(`Design log: ${logged} ${logged === 1 ? 'change' : 'changes'}, ${waiting.length} not in the spec yet.`);
