@@ -16,5 +16,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run check
+      - name: The example design file names only states the spec has
+        run: npm run design
       - name: The handoff matches the spec
         run: npm run handoff && git diff --exit-code handoff/

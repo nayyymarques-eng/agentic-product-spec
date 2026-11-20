@@ -41,6 +41,7 @@ The spec is written once and used in several ways. Each one reads the same files
 | QA | Run the evals against the built screen (`npm run behaviour`). Each failure names the eval and what differs from the spec. |
 | Review before merging | Before a change merges into the spec, a synthetic user reads the feature as each role, against the external rules and the persona sheets, three times; the findings two runs agree on are kept (`reviews/README.md`). The reviews stop when the agreed findings are only edge cases that product or feature rules already answer. |
 | Keep the external rules current | Optional, for products whose external rules change often, such as regulated ones. The rules watch (`.claude/agents/rules-watch.md`) reads the sources on a schedule and lists everything that depends on a rule that changed. It belongs to the spec: a synthetic user reads the rules from here. |
+| Keep the design in step | Optional, for teams whose design file changes faster than the spec. Each frame is titled with the state it draws, and `npm run design` lists the frames the spec does not have yet. A round of design changes ends with a pull request to the spec the same day (`.claude/agents/design-sync.md`). See "Keep the design in step" below. |
 | Hand it to the backend | `npm run handoff` writes the rules, the flow and one acceptance test per eval, for whoever builds the backend. |
 | Give an agent one feature | `npm run context answer-a-request` prints the rules that hold on every screen of that feature first, then its flow and screens, and only the other rules, decisions, questions and persona sheets they touch. The agent reads that, not the whole spec. |
 | Answer a question | Search for an ID, such as BR-02, to find every flow, state, eval and line of code that uses it. |
@@ -132,6 +133,9 @@ SPEC-07 DL-03 ("Mark as answered" is disabled; the button contract has no disabl
 | `harness/behaviour.mjs` | The behaviour check: BEH-01 to BEH-09 |
 | `harness/context.mjs` | `npm run context`: one feature's part of the spec, for an agent |
 | `.claude/agents/rules-watch.md` | The rules watch, run on a schedule |
+| `harness/design-check.mjs` | Optional. `npm run design`: checks a design file's frame titles against the spec, DESIGN-01 to DESIGN-04 |
+| `design/frames.json` | The frame titles of the example's design file, as a team would export them from its design tool |
+| `.claude/agents/design-sync.md` | Optional. Brings a round of design changes into the spec the same day |
 | `templates/.github/workflows/spec.yml` | A workflow with one job, `spec`, that runs the spec check. Copy it into your project to make `spec` a required check |
 | `.github/CODEOWNERS` | Who approves a change to each part of the spec. The lines are examples, commented out |
 | `harness/look.mjs` | Runs the design system's checks on every state |
@@ -152,6 +156,19 @@ Once: `npm install`, then `npx playwright install chromium`.
 
 The smallest start: one flow, the screen it lands on, and five evals.
 
+## Keep the design in step
+
+Optional. The spec leads and the design follows: a screen is built from the spec. But designers often decide in the design file first, and when the spec lags, whoever builds the screen finds the difference later, by accident. The rule is simple: **when the design changes, the spec changes the same day.** Each team plugs in its own design tool.
+
+1. Title every frame by what it draws: `<screen> · ST-03` for a state of the spec (`<screen> · ST-03, DL-01` for a dialog over it), `Explore · …` for an option nobody has picked, `Reference · …` for an explanation.
+2. Export the frame titles to `design/frames.json`, a list of `{ "title": "…", "page": "…" }`. From Figma, a canvas or anything else: the export is the team's own script, plugin or copy by hand.
+3. Run `npm run design`. It fails on a frame that names no state (DESIGN-01), a screen the spec does not have (DESIGN-02), or a state or dialog that screen does not have, or a dialog over a state it does not open over (DESIGN-03). It notes the states no frame draws (DESIGN-04), without failing.
+4. Each failure is a design choice the spec does not hold yet. Someone owns the round: they write the decision (`proposed`), the state and its eval, and open the spec pull request that day. `.claude/agents/design-sync.md` does this with an agent.
+
+What it does not check: that a drawing matches its state. A frame can name ST-03 and draw a button the state does not have. The titles only make every frame findable from the spec and every spec state findable in the design; reading the drawing against the state is still a person's job, or the job of whoever builds the screen.
+
+It came from a real case. In a product that uses this kit, the design file got about six hours ahead of the spec during one evening of design notes: about ten decisions lived only in the design. The fix was not a tool. Nobody owned the moment the change goes back to the spec, so the rule became "a round of design notes ends with a spec pull request the same day", and the titles made the gap visible. Even then, the person coding found two differences the titles could not show, a carousel and a typeface.
+
 ## What each team can change
 
 | Part | What a team chooses | What stays the same |
@@ -163,13 +180,14 @@ The smallest start: one flow, the screen it lands on, and five evals.
 | Flows | How many, and how detailed | Every step lands on a state, and every state is reached by a step |
 | States | How many, which one wins when two apply, and whether a decision table says when each applies | Every state has at least one eval, and the evals are the tests |
 | The design system | Any design system that has written contracts, such as [ai-ready-design-system](https://github.com/nayyymarques-eng/ai-ready-design-system) ([the framework](https://nayaramarques.com/design-system)). Set its folder in `package.json`, under `productSpec.designSystem` | The spec names only components, variants and templates the design system has |
+| The design file | Its tool, how its frame titles are exported, and whether every state gets a frame | Every frame names a state of the spec, or says it is an option or an explanation. A design change reaches the spec the same day |
 | The handoff | Its sections and where it goes | It is written from the spec, never by hand |
 
 ## Limits
 
 - The spec is only as right as the people who write and approve it. The checks find what is missing or inconsistent, not a wrong rule.
 - A rule ID in the code makes the rule findable; only the evals show the code applies it.
-- Copies kept outside the repository, such as a design file or a test plan, still drift. A decision changed in the spec reaches what works from the spec.
+- Copies kept outside the repository, such as a design file or a test plan, still drift. A decision changed in the spec reaches what works from the spec. The design check catches a frame the spec does not have, not a drawing that differs from its state.
 - The evals are tests of the situations someone wrote down. A situation nobody wrote down is not checked. Flow evals are listed for the backend's tests; this kit does not run them.
 - The spec review is an AI model reading the spec. Three runs reduce what one run misses or invents; they do not remove it.
 - The behaviour check looks at the screen once per eval, as a still screen. It does not click through the flow, or test timing, focus or the keyboard.
