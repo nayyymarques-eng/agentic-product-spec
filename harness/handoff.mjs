@@ -3,7 +3,7 @@
 // Usage: npm run handoff
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { dialogShown, list, readSpec, root } from './spec.mjs';
+import { dialogShown, list, readSpec, ruleLevel, root, PRODUCT } from './spec.mjs';
 
 const spec = readSpec();
 const byId = new Map([...spec.goals, ...spec.roles, ...spec.rules, ...spec.decisions, ...spec.questions, ...spec.sources].map(r => [r.ID, r]));
@@ -52,7 +52,12 @@ function mermaid(f) {
 mkdirSync(join(root, 'handoff'), { recursive: true });
 for (const s of spec.screens) {
   const flowsHere = spec.flows.filter(f => f.steps.some(x => x.screen === s.name));
-  const rules = [...new Set([...s.states.flatMap(st => st.rules), ...s.dialogs.flatMap(d => d.rules), ...flowsHere.flatMap(f => f.evals.flatMap(e => e.rules))])].sort().map(id => byId.get(id));
+  // Product rules hold on every screen, and feature rules on every screen of their flow, cited or not.
+  const inherited = spec.rules.filter(r => {
+    const lv = ruleLevel(r);
+    return lv.level === PRODUCT || (lv.level === 'feature' && flowsHere.some(f => f.name === lv.flow));
+  }).map(r => r.ID);
+  const rules = [...new Set([...inherited, ...s.states.flatMap(st => st.rules), ...s.dialogs.flatMap(d => d.rules), ...flowsHere.flatMap(f => f.evals.flatMap(e => e.rules))])].sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).map(id => byId.get(id));
   const cited = new Set(rules.flatMap(r => r.Sources.split(',').map(x => x.trim())));
   const lines = [
     `# Handoff: ${s.title}`,
@@ -79,11 +84,11 @@ for (const s of spec.screens) {
     ]),
     '## Rules',
     '',
-    'Each rule is a requirement. Its sources say why, so a change upstream finds this screen.',
+    'Each rule is a requirement. Its sources say why, so a change upstream finds this screen. A product rule holds on every screen, and a feature rule on every screen of its flow, whether or not a state cites it.',
     '',
-    '| ID | Rule | Sources |',
-    '|---|---|---|',
-    ...rules.map(r => `| ${r.ID} | ${r.Rule} | ${r.Sources} |`),
+    '| ID | Rule | Sources | Level |',
+    '|---|---|---|---|',
+    ...rules.map(r => `| ${r.ID} | ${r.Rule} | ${r.Sources} | ${r.Level ?? ''} |`),
     '',
     ...(s.conditions.length ? [
       '## Conditions',
