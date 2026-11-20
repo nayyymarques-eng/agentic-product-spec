@@ -11,7 +11,8 @@
     "look": "node harness/look.mjs",
     "handoff": "node harness/handoff.mjs",
     "check": "npm run spec && npm run typecheck && npm run behaviour && npm run look",
-    "context": "node harness/context.mjs"
+    "context": "node harness/context.mjs",
+    "design": "node harness/design-check.mjs"
   },
   "dependencies": {
     "ai-ready-design-system": "github:nayyymarques-eng/ai-ready-design-system#54ee28961a1bcd40c183cb3a8ff3225aca0db4d2",

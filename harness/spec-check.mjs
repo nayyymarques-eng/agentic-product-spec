@@ -153,10 +153,12 @@ for (const s of spec.screens) for (const d of s.dialogs) {
 }
 
 // SPEC-16: a decision is decided before it merges. A Status column is optional; when a decision has one, it is
-// "decided", or "proposed" until the person in Decided by approves it.
+// "decided", or "proposed" until the person in Decided by approves it. A proposed decision still stops the merge,
+// but it is listed apart from the errors: it is waiting for a person, not wrong.
+const waitingApproval = [];
 for (const d of spec.decisions) {
   const status = (d.Status ?? 'decided').trim().toLowerCase();
-  if (status === 'proposed') fail('SPEC-16', `${d.ID} is proposed: it merges once the person in Decided by (${d['Decided by'] || 'nobody named'}) sets its Status to decided`, d.file);
+  if (status === 'proposed') waitingApproval.push(`SPEC-16 (${d.ID} is proposed: it merges once the person in Decided by (${d['Decided by'] || 'nobody named'}) sets its Status to decided)  ← ${d.file}`);
   else if (status !== 'decided') fail('SPEC-16', `${d.ID} has Status "${d.Status}"; it is either proposed or decided`, d.file);
 }
 
@@ -305,5 +307,7 @@ const counts = spec.screens.map(s => `${s.name}: ${s.states.length} states, ${s.
 console.log(`Spec: ${spec.flows.length} flow, ${spec.rules.length} rules, ${spec.goals.length} goals, ${spec.decisions.length} decisions, ${spec.questions.length} open questions, ${spec.flows.reduce((n, f) => n + f.evals.length, 0)} flow evals. ${counts}.`);
 if (stale.length) console.log(`External rules to read again:\n${stale.join('\n')}`);
 if (triage.length) console.log(`To triage, for the design system owner:\n${[...new Set(triage)].join('\n')}`);
-if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}`); process.exit(1); }
+if (waitingApproval.length) console.log(`Waiting for approval, not an error. The check stays red until a person approves:\n${waitingApproval.join('\n')}`);
+if (fails.length) { console.log(fails.join('\n')); console.log(`FAIL: ${fails.length}${waitingApproval.length ? `, and ${waitingApproval.length} waiting for approval` : ''}`); process.exit(1); }
+if (waitingApproval.length) { console.log(`WAITING: no errors; ${waitingApproval.length} ${waitingApproval.length === 1 ? 'decision waits' : 'decisions wait'} for approval before this can merge.`); process.exit(1); }
 console.log('PASS: SPEC-01 to SPEC-06, SPEC-08 to SPEC-18');
