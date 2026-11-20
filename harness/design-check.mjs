@@ -9,11 +9,14 @@
 //   "Explore · <anything>"        an option nobody has picked yet; it may go against the spec
 //   "Reference · <anything>"      an explanation, such as a map of a flow; it draws no state
 //
+// The design log, design/log.md, is optional: one row per design change, written by whoever makes it (from, to, why),
+// and the decision that brought it into the spec, or "not yet".
+//
 // What it does not check: that the drawing matches the state's text. A frame can name ST-03 and draw something else.
-// A person compares them, or whoever builds the screen does.
+// The log says what changed and why; the drawing review in .claude/agents/design-sync.md looks for what nobody logged.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { readSpec, root } from './spec.mjs';
+import { readSpec, root, tables } from './spec.mjs';
 
 // One fixed place, so no path comes from outside: each team's export writes here.
 const path = join(root, 'design', 'frames.json');
@@ -62,12 +65,33 @@ for (const s of spec.screens) for (const x of [...s.states, ...s.dialogs]) {
   if (!drawn.has(`${s.name} ${x.id}`)) notes.push(`${s.name} ${x.id}`);
 }
 
+// The design log, if the team keeps one. One fixed place too.
+const logPath = join(root, 'design', 'log.md');
+const waiting = [];
+let logged = 0;
+if (existsSync(logPath)) {
+  const decisions = new Set(spec.decisions.map(d => d.ID));
+  for (const row of tables(readFileSync(logPath, 'utf8')).flat()) {
+    logged++;
+    const where = `design log, ${row.Date || 'no date'}, "${row.Frame || 'no frame'}"`;
+    // DESIGN-05: a row says what it was, what it is now, and why.
+    const empty = ['Frame', 'From', 'To', 'Why'].filter(k => !(row[k] ?? '').trim() || row[k].trim() === '-');
+    if (empty.length) fails.push(`DESIGN-05 (${where}: no ${empty.join(', ').toLowerCase()})`);
+    // DESIGN-06: the change is in the spec, as a decision the spec has, or it waits for the owner of the round.
+    const cited = (row.Spec ?? '').match(/\bD-\d{2,}\b/g) ?? [];
+    if (!cited.length) waiting.push(where);
+    for (const id of cited) if (!decisions.has(id)) fails.push(`DESIGN-06 (${where}: the spec has no ${id})`);
+  }
+}
+
 const other = frames.filter(f => OTHER.test(f.title ?? '')).length;
 console.log(`Design: ${frames.length} ${frames.length === 1 ? 'frame' : 'frames'}, ${other} explore or reference.`);
 if (notes.length) console.log(`DESIGN-04, a note: no frame draws ${notes.join(', ')}`);
+if (logged) console.log(`Design log: ${logged} ${logged === 1 ? 'change' : 'changes'}, ${waiting.length} not in the spec yet.`);
+if (waiting.length) console.log(`Waiting for the spec (write the decision, the state and its eval today):\n  ${waiting.join('\n  ')}`);
 if (fails.length) {
   console.log(fails.join('\n'));
-  console.log(`FAIL: ${fails.length}. Each one is a design change the spec does not have yet: write the decision, the state and its eval, or retitle the frame "Explore · …".`);
+  console.log(`FAIL: ${fails.length}. A frame the spec does not have is a design change not in the spec yet: write the decision, the state and its eval, or retitle the frame "Explore · …". A log row needs its from, to and why, and a decision the spec has.`);
   process.exit(1);
 }
-console.log('PASS: DESIGN-01 to DESIGN-03. This checks that every frame names a state the spec has, not that the drawing matches it.');
+console.log('PASS: DESIGN-01 to DESIGN-03, DESIGN-05, DESIGN-06. This checks that every frame names a state the spec has and every logged change says why, not that the drawing matches the spec.');
