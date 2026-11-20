@@ -202,7 +202,7 @@ function flow(file) {
   const top = bullets(text.split('\n## ')[0]);
   const steps = (tables(text.split('\n## Steps')[1] ?? '')[0] ?? []).map(r => ({
     id: r.Step, who: r.Who, what: r['What happens'], screen: r.Screen === '-' ? '' : r.Screen,
-    states: list(r.States), dialog: list(r.Dialog)[0] ?? '', next: r.Next, to: [...r.Next.matchAll(/F-\d{2}/g)].map(m => m[0]), ends: /\bend\b/.test(r.Next),
+    states: list(r.States), dialog: list(r.Dialog)[0] ?? '', next: r.Next, to: [...r.Next.matchAll(/F-\d{2,3}/g)].map(m => m[0]), ends: /\bend\b/.test(r.Next),
   }));
   // Evals for what the flow does that no screen shows, such as a message the product must never send.
   const evals = (tables(text.split('\n## Evals')[1] ?? '')[0] ?? []).map(r => ({ ...r, rules: list(r.Rules) }));

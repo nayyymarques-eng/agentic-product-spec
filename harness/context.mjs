@@ -36,7 +36,7 @@ const ids = new Set([
   ...spec.rules.filter(r => list(r.Where).some(w => here.has(w))).map(r => r.ID),
 ]);
 const all = [...spec.goals, ...spec.roles, ...spec.rules, ...spec.decisions, ...spec.questions, ...spec.sources];
-const cites = row => Object.values(row).join(' ').match(/\b(?:BR|D|Q|G|R|PRIV)-\d{2}\b/g) ?? [];
+const cites = row => Object.values(row).join(' ').match(/\b(?:BR|D|Q|G|R|PRIV)-\d{2,3}\b/g) ?? [];
 for (let grew = true; grew;) {
   grew = false;
   for (const row of all) if (ids.has(row.ID)) for (const id of cites(row)) if (!ids.has(id)) { ids.add(id); grew = true; }
