@@ -1,5 +1,5 @@
 // Optional: checks a design file's frame titles against the spec, so a design change that never reached the spec shows up.
-// Usage: npm run design -- <frames.json>   (default: design/frames.json)
+// Usage: npm run design   (reads design/frames.json)
 //
 // The design tool is each team's choice. Export the titles of the frames (Figma, a canvas, slides, anything) to a JSON
 // list: [{ "title": "request · ST-03", "page": "Answer a request" }, ...]. "page" is optional and only used in the report.
@@ -12,13 +12,13 @@
 // What it does not check: that the drawing matches the state's text. A frame can name ST-03 and draw something else.
 // A person compares them, or whoever builds the screen does.
 import { existsSync, readFileSync } from 'node:fs';
-import { resolve, sep } from 'node:path';
+import { join } from 'node:path';
 import { readSpec, root } from './spec.mjs';
 
-// The path comes from the command line: accept only a .json file inside this repository.
-const path = resolve(root, process.argv[2] ?? 'design/frames.json');
-if (!path.startsWith(root + sep) || !path.endsWith('.json') || !existsSync(path)) {
-  console.log('No frame list found. Export your design file\'s frame titles to a .json file inside this repository, such as design/frames.json (see README, "Keep the design in step").');
+// One fixed place, so no path comes from outside: each team's export writes here.
+const path = join(root, 'design', 'frames.json');
+if (!existsSync(path)) {
+  console.log('No frame list at design/frames.json. Export your design file\'s frame titles there first (see README, "Keep the design in step").');
   process.exit(1);
 }
 const frames = JSON.parse(readFileSync(path, 'utf8'));
