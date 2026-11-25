@@ -57,6 +57,7 @@ Decisions live at two levels. A decision about the whole product, made for no si
 | ID | D- and a number |
 | Decision | The choice, in plain words |
 | Why | The reason, and where it came from: user research, a market insight, the business strategy, a technical limit. A decision never goes against an external rule |
+| Expected | Optional. What should change for the people who use the product if the decision is right, written when the decision is made, before anyone knows. The evals say what the product does; Expected says what that should change for people |
 | Decided by | Who made it |
 | Applies to | The flows and screens it touches, by file name, or `product` for the whole product |
 | Date | When it was made |
@@ -65,7 +66,7 @@ Decisions live at two levels. A decision about the whole product, made for no si
 
 A proposed decision is written like any other, with Status `proposed` and, in Decided by, the person who must approve it. Until then, every agent treats it as an open question, and the spec check fails, so it cannot merge undecided. The person approves it by setting Status to `decided` in the same pull request.
 
-Two features can decide differently. When a decision is no longer true, its row moves to `decisions-replaced.md`, with three more columns: the decision that replaced it, the date, and what we learned: why it stopped being true. The next person or agent to touch the feature reads it there, so a decision dropped for a reason does not come back. The spec check then fails on anything that still cites the old one, so each place that followed it is looked at again.
+Two features can decide differently. When a decision is no longer true, its row moves to `decisions-replaced.md`, with three more columns: the decision that replaced it, the date, and what we learned: why it stopped being true and, when it had an Expected, where that expectation was wrong. The next person or agent to touch the feature reads it there, so a decision dropped for a reason does not come back. The spec check then fails on anything that still cites the old one, so each place that followed it is looked at again.
 
 A business rule cites the decisions it follows, by ID. When an open question is answered, the answer becomes a decision. An open question names the flows and screens it applies to: it may stay open inside one feature, but one that reaches further is answered before the change merges.
 
